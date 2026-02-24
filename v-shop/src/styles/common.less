@@ -1,0 +1,210 @@
+// 公共布局样式
+.page-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 主内容区 - 统一所有页面 */
+.main-content {
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+  padding: 20px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  display: block !important;
+  overflow: visible !important;
+}
+
+/* 白色背景容器 */
+.white-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+  overflow: hidden;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.white-container:last-child {
+  margin-bottom: 0;
+}
+
+// 顶部导航样式
+.top-header {
+  width: 100% !important;
+  height: 70px !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.header-content {
+  width: 100% !important;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding: 0 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-sizing: border-box !important;
+}
+
+.logo {
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.main-menu {
+  flex: 1 !important;
+  margin: 0 40px !important;
+  border-bottom: none !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  height: 70px !important;
+  min-height: 70px !important;
+  max-height: 70px !important;
+
+  .el-menu-item {
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    padding: 0 20px !important;
+    height: 70px !important;
+    line-height: 70px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    transition: all 0.3s ease !important;
+  }
+
+  :deep(.el-menu-item) {
+    background-color: transparent !important;
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05) !important;
+      color: var(--color-primary) !important;
+      height: 70px !important;
+      border-radius: 0 !important;
+    }
+  }
+
+  :deep(.el-menu-item.is-active) {
+    color: var(--color-primary) !important;
+    border-bottom: 2px solid var(--color-primary) !important;
+    background-color: transparent !important;
+  }
+
+  /* 移除按钮焦点高亮效果 */
+  :deep(.el-menu-item) {
+    outline: none !important;
+
+    &:focus,
+    &:focus-visible {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+  }
+
+  :deep(.el-menu) {
+    background-color: transparent !important;
+    border-bottom: none !important;
+    height: 70px !important;
+    min-height: 70px !important;
+    max-height: 70px !important;
+  }
+}
+
+.header-actions {
+  display: flex !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+
+  :deep(.el-button--primary) {
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background-color: var(--color-primary) !important;
+      border-color: var(--color-primary) !important;
+      opacity: 0.9;
+    }
+  }
+}
+
+/* 修复Element Plus图标过大问题 */
+:deep(.el-icon),
+:deep(.element-plus-icon) {
+  font-size: 16px !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  min-height: auto !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+  line-height: normal !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* 确保按钮图标大小合适 */
+:deep(.el-button .el-icon),
+:deep(.el-button .element-plus-icon) {
+  font-size: 14px !important;
+  margin-right: 4px !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .main-content {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 992px) {
+  .goods-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .goods-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .banner-image {
+    height: 300px;
+  }
+}
+
+@media (max-width: 576px) {
+  .goods-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  .banner-image {
+    height: 200px;
+  }
+}
