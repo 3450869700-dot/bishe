@@ -1,0 +1,162 @@
+// 全局按钮主题色样式
+
+// 统一处理 Element Plus 按钮主题色
+.el-button--primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: white !important;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: rgba(var(--color-primary-rgb), 0.9) !important; /* 比主色深10%左右 */
+    border-color: rgba(var(--color-primary-rgb), 0.9) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3) !important;
+  }
+}
+
+// 处理plain按钮的样式
+.el-button--primary.is-plain {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: white !important;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: rgba(var(--color-primary-rgb), 0.9) !important; /* 比主色深10%左右 */
+    border-color: rgba(var(--color-primary-rgb), 0.9) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3) !important;
+  }
+}
+
+.el-button--default {
+  &:hover,
+  &:focus {
+    border-color: var(--color-primary) !important;
+    color: var(--color-primary) !important;
+    background-color: rgba(var(--color-primary-rgb), 0.1) !important;
+  }
+}
+
+.el-button--success {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: white !important;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: rgba(var(--color-primary-rgb), 0.9) !important; /* 比主色深10%左右 */
+    border-color: rgba(var(--color-primary-rgb), 0.9) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3) !important;
+  }
+}
+
+.el-button--warning {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: white !important;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: rgba(var(--color-primary-rgb), 0.9) !important; /* 比主色深10%左右 */
+    border-color: rgba(var(--color-primary-rgb), 0.9) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3) !important;
+  }
+}
+
+.el-button--info {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: white !important;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: rgba(var(--color-primary-rgb), 0.9) !important; /* 比主色深10%左右 */
+    border-color: rgba(var(--color-primary-rgb), 0.9) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3) !important;
+  }
+}
+
+.el-button--danger {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: white !important;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: rgba(var(--color-primary-rgb), 0.9) !important; /* 比主色深10%左右 */
+    border-color: rgba(var(--color-primary-rgb), 0.9) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3) !important;
+  }
+}
+
+// 统一处理 Vant 按钮主题色
+.van-button--primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: white !important;
+
+  &:hover,
+  &:active {
+    background-color: rgba(var(--color-primary-rgb), 0.9) !important; /* 比主色深10%左右 */
+    border-color: rgba(var(--color-primary-rgb), 0.9) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3) !important;
+  }
+}
+
+.van-button--default {
+  &:hover,
+  &:active {
+    color: var(--color-primary) !important;
+    background-color: rgba(var(--color-primary-rgb), 0.1) !important;
+  }
+}
+
+.van-button--info,
+.van-button--success,
+.van-button--warning,
+.van-button--danger {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: white !important;
+
+  &:hover,
+  &:active {
+    background-color: rgba(var(--color-primary-rgb), 0.9) !important; /* 比主色深10%左右 */
+    border-color: rgba(var(--color-primary-rgb), 0.9) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3) !important;
+  }
+}
+
+// 为所有按钮添加过渡效果
+.el-button,
+.van-button {
+  transition: all 0.3s ease-in-out !important;
+
+  &:focus,
+  &:focus-visible {
+    outline: 2px solid rgba(var(--color-primary-rgb), 0.3) !important;
+    outline-offset: 2px !important;
+  }
+}
