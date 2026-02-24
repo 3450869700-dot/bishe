@@ -1,0 +1,44 @@
+# Maven
+.target/
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build
+build/
+dist/
+
+# Java
+*.class
+*.jar
+*.war
+
+# Database
+*.sql
+*.sql.gz
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
