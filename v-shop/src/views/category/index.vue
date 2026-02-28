@@ -483,11 +483,11 @@ function handleCurrentChange(val: number) {
   }
 }
 
-/* 商品网格 */
+/* 商品网格 - 6列布局 */
 .goods-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
   margin-bottom: 20px;
 }
 
@@ -563,11 +563,11 @@ function handleCurrentChange(val: number) {
   margin-top: auto;
 }
 
-/* 骨架屏样式 */
+/* 骨架屏样式 - 6列布局 */
 .skeleton-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
   margin-bottom: 20px;
 }
 
@@ -682,24 +682,35 @@ function handleCurrentChange(val: number) {
   display: none;
 }
 
-/* 响应式设计 */
+/* 响应式设计 - 6列布局 */
+@media (max-width: 1400px) {
+  .goods-grid,
+  .skeleton-container {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+  }
+}
+
 @media (max-width: 1200px) {
-  .goods-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 16px;
+  .goods-grid,
+  .skeleton-container {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
   }
 }
 
 @media (max-width: 992px) {
-  .goods-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  .goods-grid,
+  .skeleton-container {
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
   }
 }
 
 @media (max-width: 768px) {
-  .goods-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  .goods-grid,
+  .skeleton-container {
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
 }

@@ -41,10 +41,13 @@ const cacheUtils = {
   },
   set(key: string, data: any) {
     try {
-      localStorage.setItem(key, JSON.stringify({
-        data,
-        expireTime: Date.now() + CACHE_EXPIRE_TIME * 1000,
-      }));
+      localStorage.setItem(
+        key,
+        JSON.stringify({
+          data,
+          expireTime: Date.now() + CACHE_EXPIRE_TIME * 1000,
+        }),
+      );
     } catch (e) {
       console.log('缓存设置失败:', e);
     }
@@ -110,7 +113,7 @@ const BANNER_DATA = [
 // ==================== 数据获取 ====================
 async function fetchGoodsList(page = pagination.pageCurrent, useCache = true) {
   const cacheKey = `${CACHE_KEY_PREFIX}${page}_${pagination.pageSize}`;
-  
+
   if (useCache) {
     const cached = cacheUtils.get(cacheKey);
     if (cached) {
@@ -126,18 +129,18 @@ async function fetchGoodsList(page = pagination.pageCurrent, useCache = true) {
       page: page - 1,
       pageSize: pagination.pageSize,
     });
-    
+
     if (res.code === 0 && res.data) {
       list.value = res.data.result || [];
       pagination.total = res.data.totalRow || 0;
-      
+
       cacheUtils.set(cacheKey, {
         result: res.data.result,
         total: res.data.totalRow,
       });
-      
+
       // 预加载图片（使用 requestIdleCallback 避免阻塞）
-      const imageUrls = list.value.map(item => item.pic).filter(Boolean);
+      const imageUrls = list.value.map((item) => item.pic).filter(Boolean);
       if ('requestIdleCallback' in window) {
         requestIdleCallback(() => imageUtils.preload(imageUrls), { timeout: 2000 });
       } else {
@@ -170,7 +173,7 @@ async function confirmAddToCart() {
       productId: currentGood.value.id,
       productPrice: currentGood.value.price_num || currentGood.value.minPriceNum || 0,
     });
-    
+
     if (res.code === 0) {
       ElMessage.success(`已将${currentGood.value.name}加入购物车`);
       cartDialogVisible.value = false;
@@ -207,7 +210,7 @@ function setupScrollPreload() {
       if (pagination.pageCurrent < totalPages) {
         const nextPage = pagination.pageCurrent + 1;
         const cacheKey = `${CACHE_KEY_PREFIX}${nextPage}_${pagination.pageSize}`;
-        
+
         if (!cacheUtils.get(cacheKey)) {
           API_GOODS.goodsList({ page: nextPage - 1, pageSize: pagination.pageSize })
             .then((res) => {
@@ -233,10 +236,10 @@ onMounted(() => {
   // 设置轮播图（优先使用缓存）
   bannerList.value = cacheUtils.get(BANNER_CACHE_KEY) || BANNER_DATA;
   cacheUtils.set(BANNER_CACHE_KEY, BANNER_DATA);
-  
+
   // 获取商品列表
   fetchGoodsList();
-  
+
   // 设置滚动预加载
   setupScrollPreload();
 });
@@ -255,10 +258,10 @@ onUnmounted(() => {
     <main class="main-content">
       <!-- 轮播图 -->
       <div class="banner-section">
-        <el-carousel :interval="5000" arrow="hover" height="400px" indicator-position="outside">
-          <el-carousel-item 
-            v-for="item in bannerList" 
-            :key="item.id" 
+        <el-carousel :interval="5000" arrow="hover" height="100%" indicator-position="none">
+          <el-carousel-item
+            v-for="item in bannerList"
+            :key="item.id"
             @click="item.linkUrl && (window.location.href = item.linkUrl)"
           >
             <el-image class="banner-image" fit="cover" :src="item.picUrl" :alt="item.title" />
@@ -292,11 +295,7 @@ onUnmounted(() => {
 
         <!-- 商品列表 -->
         <div v-else class="goods-grid">
-          <div 
-            v-for="item in list" 
-            :key="item.id" 
-            class="goods-card"
-          >
+          <div v-for="item in list" :key="item.id" class="goods-card">
             <div class="goods-image-wrapper" @click="onGoodClicked(item.id)">
               <img
                 class="goods-image"
@@ -345,21 +344,13 @@ onUnmounted(() => {
           />
           <div class="dialog-good-details">
             <div class="dialog-good-name">{{ currentGood.name }}</div>
-            <div class="dialog-good-price">
-              ¥{{ currentGood.price_num || currentGood.minPriceNum }} {{ priceUnit }}
-            </div>
+            <div class="dialog-good-price">¥{{ currentGood.price_num || currentGood.minPriceNum }} {{ priceUnit }}</div>
           </div>
         </div>
 
         <div class="dialog-quantity-section">
           <div class="dialog-quantity-label">数量</div>
-          <ElInputNumber 
-            v-model="cartQuantity" 
-            :min="1" 
-            :max="currentGood.stores || 999" 
-            :step="1" 
-            size="large" 
-          />
+          <ElInputNumber v-model="cartQuantity" :min="1" :max="currentGood.stores || 999" :step="1" size="large" />
         </div>
 
         <div class="dialog-total-section">
@@ -380,8 +371,12 @@ onUnmounted(() => {
 <style lang="less" scoped>
 // 骨架屏动画
 @keyframes skeleton-loading {
-  0% { background-position: 100% 50%; }
-  100% { background-position: 0 50%; }
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
 }
 
 .page-container {
@@ -397,11 +392,40 @@ onUnmounted(() => {
   margin-bottom: 20px;
   overflow: hidden;
   width: 100%;
+  height: 400px;
+  box-sizing: border-box;
 }
 
 .banner-image {
   width: 100%;
-  height: 400px;
+  height: 100%;
+  display: block;
+}
+
+// 确保轮播图填满容器
+:deep(.el-carousel) {
+  height: 100% !important;
+}
+
+:deep(.el-carousel__container) {
+  height: 100% !important;
+}
+
+:deep(.el-carousel__item) {
+  height: 100% !important;
+}
+
+:deep(.el-image) {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+}
+
+:deep(.el-image__inner) {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
 }
 
 // 商品列表区域
@@ -412,6 +436,7 @@ onUnmounted(() => {
   margin-bottom: 20px;
   padding: 20px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 // 标题区域
@@ -436,11 +461,11 @@ onUnmounted(() => {
   gap: 10px;
 }
 
-// 骨架屏
+// 骨架屏 - 固定6列布局，与商品网格保持一致
 .skeleton-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
   margin-bottom: 20px;
 }
 
@@ -452,11 +477,11 @@ onUnmounted(() => {
   animation: skeleton-loading 1.5s ease-in-out infinite;
 }
 
-// 商品网格布局
+// 商品网格布局 - 固定6列布局，适配大屏幕
 .goods-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
   margin-bottom: 20px;
 }
 
@@ -491,11 +516,11 @@ onUnmounted(() => {
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease, opacity 0.3s ease;
-    
+
     &:hover {
       transform: scale(1.05);
     }
-    
+
     &.image-error {
       opacity: 0.8;
     }
@@ -509,15 +534,14 @@ onUnmounted(() => {
   left: 0;
   background-color: #f56c6c;
   color: #ffffff;
-  padding: 4px 12px;
-  font-size: 12px;
+  padding: 5px 14px;
   font-weight: 500;
   border-radius: 0 4px 4px 0;
 }
 
 // 商品信息
 .goods-info {
-  padding: 10px;
+  padding: 12px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -525,11 +549,11 @@ onUnmounted(() => {
 
 // 商品标题
 .goods-title {
-  font-size: 14px;
+  font-size: 16px !important;
   color: #333333;
-  margin-bottom: 8px;
-  line-height: 20px;
-  height: 40px;
+  margin-bottom: 10px;
+  line-height: 22px;
+  height: 44px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -544,13 +568,12 @@ onUnmounted(() => {
   gap: 8px;
 
   .current-price {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
     color: #ff4400;
   }
 
   .original-price {
-    font-size: 12px;
     color: #999999;
     text-decoration: line-through;
   }
@@ -591,7 +614,6 @@ onUnmounted(() => {
 }
 
 .dialog-good-name {
-  font-size: 16px;
   font-weight: 500;
   color: #333;
   margin-bottom: 8px;
@@ -618,7 +640,6 @@ onUnmounted(() => {
 }
 
 .dialog-quantity-label {
-  font-size: 14px;
   color: #666;
 }
 
@@ -631,7 +652,6 @@ onUnmounted(() => {
 }
 
 .dialog-total-label {
-  font-size: 16px;
   font-weight: 500;
   color: #333;
 }

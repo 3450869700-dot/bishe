@@ -41,6 +41,9 @@ export function discountsFetch(data?: Recordable) {
     url: `/discounts/fetch`,
     method: 'post',
     data,
+    headers: {
+      'Content-Type': 'application/json',
+    },
     requestOptions: {
       errorMessageMode: 'none',
     },

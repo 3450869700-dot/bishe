@@ -108,21 +108,26 @@ function enableOmnipotent() {
 <style lang="less" scoped>
 .role-select-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f5f7fa 0%, #ffffff 100%);
-  padding: 40px 20px;
+  background: transparent;
+  padding: 60px 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .header {
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 60px;
 
   .logo {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 20px;
-    border-radius: 20px;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 24px;
+    border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 
     img {
       width: 100%;
@@ -132,95 +137,145 @@ function enableOmnipotent() {
   }
 
   .title {
-    font-size: 32px;
+    font-size: 42px;
     font-weight: bold;
     color: #333;
-    margin: 0 0 10px;
+    margin: 0 0 16px;
+    letter-spacing: 2px;
   }
 
   .subtitle {
-    font-size: 16px;
-    color: #999;
+    font-size: 18px;
+    color: #888;
     margin: 0;
+    font-weight: 400;
   }
 }
 
 .role-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
+  width: 100%;
 }
 
 .role-item {
   display: flex;
   align-items: center;
-  padding: 24px 20px;
+  padding: 32px 28px;
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
   cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid transparent;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
     border-color: var(--role-color);
   }
 
   &:active {
-    transform: translateY(0);
+    transform: translateY(-2px) scale(1.01);
   }
 }
 
 .role-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--role-color) 0%, rgba(255, 255, 255, 0.3) 100%);
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--role-color) 0%, rgba(255, 255, 255, 0.4) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  margin-right: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  margin-right: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .role-info {
   flex: 1;
 
   .role-label {
-    font-size: 18px;
+    font-size: 22px;
     font-weight: 600;
     color: #333;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
   }
 
   .role-desc {
-    font-size: 14px;
-    color: #999;
+    font-size: 15px;
+    color: #888;
+    line-height: 1.5;
   }
 }
 
 .role-arrow {
   color: #ccc;
-  font-size: 16px;
+  font-size: 20px;
+  transition: all 0.3s ease;
+
+  .role-item:hover & {
+    color: var(--role-color);
+    transform: translateX(4px);
+  }
 }
 
 .debug-section {
-  margin-top: 40px;
+  margin-top: 50px;
   text-align: center;
 
   .omnipotent-badge {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 16px;
+    padding: 10px 20px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #fff;
-    border-radius: 20px;
+    border-radius: 24px;
     font-size: 14px;
     font-weight: 500;
+  }
+}
+
+// 响应式适配
+@media (max-width: 768px) {
+  .role-select-page {
+    padding: 40px 20px;
+  }
+
+  .header {
+    margin-bottom: 40px;
+
+    .title {
+      font-size: 32px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+    }
+  }
+
+  .role-item {
+    padding: 24px 20px;
+  }
+
+  .role-icon {
+    width: 60px;
+    height: 60px;
+    margin-right: 16px;
+  }
+
+  .role-info {
+    .role-label {
+      font-size: 18px;
+    }
+
+    .role-desc {
+      font-size: 13px;
+    }
   }
 }
 </style>

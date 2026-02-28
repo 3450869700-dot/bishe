@@ -117,21 +117,23 @@ function goBackToRoleSelect() {
   top: 0 !important;
   z-index: 100 !important;
   display: flex !important;
-  align-items: center !important;
+  align-items: stretch !important;
   margin: 0 !important;
   padding: 0 !important;
   box-sizing: border-box !important;
+  overflow: visible !important;
 }
 
 .header-content {
   width: 100% !important;
-  max-width: 1200px !important;
+  max-width: 1760px !important;
   margin: 0 auto !important;
   padding: 0 20px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   box-sizing: border-box !important;
+  overflow: visible !important;
 }
 
 .logo {
@@ -144,7 +146,6 @@ function goBackToRoleSelect() {
 .main-menu {
   flex: 1 !important;
   margin: 0 40px !important;
-  border-bottom: none !important;
   background-color: transparent !important;
   padding: 0 !important;
   box-sizing: border-box !important;
@@ -152,50 +153,76 @@ function goBackToRoleSelect() {
   min-height: 70px !important;
   max-height: 70px !important;
 
-  .el-menu-item {
-    font-size: 16px !important;
-    font-weight: 500 !important;
-    padding: 0 20px !important;
-    height: 70px !important;
-    line-height: 70px !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-    transition: all 0.3s ease !important;
-  }
-
-  :deep(.el-menu-item) {
-    background-color: transparent !important;
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.05) !important;
-      color: var(--color-primary) !important;
-      height: 70px !important;
-      border-radius: 0 !important;
-    }
-  }
-
-  :deep(.el-menu-item.is-active) {
-    color: var(--color-primary) !important;
-    border-bottom: 2px solid var(--color-primary) !important;
-    background-color: transparent !important;
-  }
-
-  /* 移除按钮焦点高亮效果 */
-  :deep(.el-menu-item) {
-    outline: none !important;
-
-    &:focus,
-    &:focus-visible {
-      outline: none !important;
-      box-shadow: none !important;
-    }
-  }
-
+  /* 重置 Element Plus 菜单样式 */
   :deep(.el-menu) {
     background-color: transparent !important;
     border-bottom: none !important;
     height: 70px !important;
     min-height: 70px !important;
     max-height: 70px !important;
+    overflow: visible !important;
+    display: flex !important;
+    align-items: flex-end !important;
+  }
+
+  :deep(.el-menu--horizontal) {
+    background-color: transparent !important;
+    border-bottom: none !important;
+    overflow: visible !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    height: 70px !important;
+  }
+
+  :deep(.el-menu-item) {
+    background-color: transparent !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    height: 70px !important;
+    padding: 0 16px !important;
+    margin: 0 4px !important;
+    box-sizing: border-box !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    transition: all 0.3s ease !important;
+
+    &::after {
+      content: '' !important;
+      position: absolute !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+      height: 3px !important;
+      background-color: transparent !important;
+      transition: background-color 0.3s ease !important;
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05) !important;
+      color: var(--color-primary) !important;
+      border-radius: 0 !important;
+    }
+  }
+
+  :deep(.el-menu-item.is-active) {
+    color: var(--color-primary) !important;
+    background-color: transparent !important;
+    height: 70px !important;
+
+    &::after {
+      background-color: var(--color-primary) !important;
+    }
+  }
+
+  /* 移除按钮焦点高亮效果 */
+  :deep(.el-menu-item:focus),
+  :deep(.el-menu-item:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
   }
 }
 
@@ -204,6 +231,12 @@ function goBackToRoleSelect() {
   gap: 10px !important;
   margin: 0 !important;
   padding: 0 !important;
+
+  :deep(.el-button) {
+    font-size: 16px !important;
+    padding: 8px 16px !important;
+    height: auto !important;
+  }
 
   :deep(.el-button--primary) {
     background-color: var(--color-primary) !important;
