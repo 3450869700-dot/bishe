@@ -36,4 +36,11 @@ public class UserCouponService {
     public void deleteById(Long id) {
         userCouponRepository.deleteById(id);
     }
+    
+    /**
+     * 查询用户已领取某张优惠券的数量
+     */
+    public long countByUserIdAndCouponId(Long userId, Long couponId) {
+        return userCouponRepository.countByUserIdAndCouponId(userId, couponId);
+    }
 }

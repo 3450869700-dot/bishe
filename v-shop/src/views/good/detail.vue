@@ -562,20 +562,20 @@ function handleFavorite() {
             <td style="width: 60%; padding: 10px; vertical-align: top">
               <div class="right-content">
                 <!-- 商品名称 -->
-                <div class="product-name" style="font-size: 24px; font-weight: 600; margin-bottom: 10px">
+                <div class="product-title">
                   {{ basicInfo.name }}
                 </div>
 
                 <!-- 评分 -->
                 <div class="product-rating" style="margin-bottom: 15px">
                   <span class="stars" style="color: #ffd700; font-size: 16px"> ★★★★★ </span>
-                  <span style="margin-left: 10px; font-size: 14px; color: #666"> (4.9) </span>
+                  <span style="margin-left: 10px; color: #666"> (4.9) </span>
                 </div>
 
                 <!-- 价格 -->
                 <div
                   class="product-price"
-                  style="font-size: 28px; font-weight: bold; color: #ff4400; margin-bottom: 20px"
+                  style="font-size: 22px !important; font-weight: bold; color: #ff4400; margin-bottom: 20px"
                 >
                   ¥{{ goodPrice }}
                 </div>
@@ -598,7 +598,6 @@ function handleFavorite() {
                           border: 1px solid #ddd;
                           border-radius: 4px;
                           cursor: pointer;
-                          font-size: 14px;
                           transition: all 0.3s ease;
                         "
                         :style="
@@ -619,7 +618,7 @@ function handleFavorite() {
                 </div>
 
                 <!-- 库存提示 -->
-                <div class="stock-alert" style="margin-bottom: 20px; font-size: 14px; color: #666; font-style: italic">
+                <div class="stock-alert" style="margin-bottom: 20px; color: #666; font-style: italic">
                   {{ goodStock > 0 ? `剩余 ${goodStock} 件，立即购买！` : '库存不足' }}
                 </div>
 
@@ -653,7 +652,6 @@ function handleFavorite() {
                         border: none;
                         border-left: 1px solid #ddd;
                         border-right: 1px solid #ddd;
-                        font-size: 14px;
                       "
                     />
                     <button
@@ -828,6 +826,14 @@ function handleFavorite() {
       max-width: 100%;
     }
   }
+
+  /* 商品标题 */
+  .product-title {
+    font-size: 20px !important;
+    font-weight: 600;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
 }
 
 /* 商品基本信息样式 */
@@ -872,7 +878,6 @@ function handleFavorite() {
     color: #ff4400;
 
     &-symbol {
-      font-size: 14px;
       margin-right: 2px;
     }
 
@@ -888,7 +893,6 @@ function handleFavorite() {
     align-items: flex-end;
     align-items: center;
     margin-right: 8px;
-    font-size: 12px;
     line-height: 18px;
     color: var(--color-text-3);
 
@@ -906,7 +910,7 @@ function handleFavorite() {
     box-sizing: border-box;
     margin-left: 10px;
     display: inline-flex;
-    font-size: 10px;
+    font-size: 12px;
     padding: 2px 4px;
     border-radius: 4px;
     color: #f44;
@@ -925,7 +929,6 @@ function handleFavorite() {
   &-brief {
     margin-top: 4px;
     color: var(--color-text-3);
-    font-size: 12px;
     word-break: break-all;
   }
 }
@@ -941,7 +944,6 @@ function handleFavorite() {
 
   &-item {
     flex: 1;
-    font-size: 12px;
     color: var(--color-text-3);
 
     &:last-child {
@@ -957,7 +959,7 @@ function handleFavorite() {
   padding-top: 10px;
   overflow: hidden;
   color: var(--color-text-1);
-  font-size: 16px;
+  font-size: 16px !important;
   line-height: 1.5;
   text-align: left;
   word-wrap: break-word;
@@ -971,6 +973,7 @@ function handleFavorite() {
   :deep(p) {
     margin: 0;
     padding: 0;
+    font-size: 14px !important;
   }
 }
 
@@ -989,6 +992,7 @@ function handleFavorite() {
     padding: 12px 16px;
     text-align: left;
     border-bottom: 1px solid #f0f0f0;
+    font-size: 14px !important;
   }
 
   th {
@@ -996,13 +1000,13 @@ function handleFavorite() {
     background-color: #f9f9f9;
     font-weight: 600;
     color: var(--color-text-2);
-    font-size: 14px;
+    font-size: 14px !important;
   }
 
   td {
     flex: 1;
-    font-size: 14px;
     color: var(--color-text-1);
+    font-size: 14px !important;
   }
 
   tr:last-child th,
@@ -1076,7 +1080,6 @@ function handleFavorite() {
 }
 
 .specification-desc {
-  font-size: 12px;
   color: var(--color-text-3);
   margin-top: 10px;
   padding-left: 2px;
@@ -1294,7 +1297,6 @@ function handleFavorite() {
 /* 修复按钮样式 */
 :deep(.van-button--small) {
   padding: 8px 16px;
-  font-size: 14px;
   border-radius: 4px;
 }
 
@@ -1368,12 +1370,11 @@ function handleFavorite() {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-}
 
-.dialog-good-spec {
-  font-size: 14px;
-  color: #999;
-  margin-bottom: 8px;
+  .dialog-good-spec {
+    color: #999;
+    margin-bottom: 8px;
+  }
 }
 
 .dialog-good-price {
@@ -1390,7 +1391,6 @@ function handleFavorite() {
 }
 
 .dialog-quantity-label {
-  font-size: 14px;
   color: #666;
 }
 

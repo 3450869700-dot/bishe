@@ -74,7 +74,7 @@ async function getList() {
           name: item.productName || `商品 ${item.productCode}`,
           pic: item.productImage || '',
           price: item.productPrice || 0,
-          number: item.productNum || 1,
+          number: item.productNum > 0 ? item.productNum : 1,
           selected: item.isChecked === 1,
           stock: 100,
           spec: item.productSpec || '',
@@ -304,26 +304,25 @@ onMounted(() => {
   </div>
 </template>
 
+<style lang="less">
+// 导入公共样式
+@import '@/styles/common.less';
+</style>
+
 <style lang="less" scoped>
 // 使用主题色变量
 @theme-color: var(--color-primary, #ff6b6b);
 @theme-color-light: var(--color-primary-light, #ff8e8e);
 @theme-color-dark: var(--color-primary-dark, #ff4848);
 
-.page-container {
-  min-height: 100vh;
-  background-color: #f5f5f5;
-}
-
-.main-content {
-  padding-top: 60px;
-  padding-bottom: 100px;
+// 购物车页面特定的内容区样式（只添加额外的padding，不覆盖max-width）
+:deep(.main-content) {
+  padding-top: 60px !important;
+  padding-bottom: 100px !important;
 }
 
 .cart-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+  width: 100%;
 }
 
 .cart-header {
@@ -399,7 +398,6 @@ onMounted(() => {
 
 .goods-count {
   color: #999;
-  font-size: 14px;
 }
 
 .goods-list {
@@ -466,7 +464,7 @@ onMounted(() => {
 }
 
 .item-title {
-  font-size: 14px;
+  font-size: 16px !important;
   color: #333;
   margin-bottom: 8px;
   line-height: 1.5;
@@ -477,13 +475,11 @@ onMounted(() => {
 }
 
 .item-sku {
-  font-size: 12px;
   color: #999;
   margin-bottom: 8px;
 }
 
 .item-stock {
-  font-size: 12px;
   color: @theme-color;
   margin-bottom: 8px;
 }
@@ -498,10 +494,6 @@ onMounted(() => {
   color: @theme-color;
   font-weight: 600;
 
-  .price-symbol {
-    font-size: 12px;
-  }
-
   .price-value {
     font-size: 18px;
   }
@@ -509,7 +501,6 @@ onMounted(() => {
 
 .item-subtotal {
   margin-top: 8px;
-  font-size: 14px;
   color: #666;
 
   .subtotal-price {
@@ -553,13 +544,11 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
-  font-size: 14px;
 
   &.total {
     margin-top: 15px;
     padding-top: 15px;
     border-top: 1px solid #f0f0f0;
-    font-size: 16px;
     font-weight: 600;
 
     .actual {
@@ -588,13 +577,11 @@ onMounted(() => {
   flex-direction: column;
 
   .total-count {
-    font-size: 12px;
     color: #999;
     margin-bottom: 4px;
   }
 
   .total-amount {
-    font-size: 14px;
     color: #333;
 
     .amount {

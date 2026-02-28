@@ -231,7 +231,7 @@ export default {
 
 <style lang="less" scoped>
 .traceability-page {
-  max-width: 1200px;
+  max-width: 1760px;
   margin: 0 auto;
 }
 

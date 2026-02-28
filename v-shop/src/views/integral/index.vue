@@ -469,7 +469,7 @@ function onGoShopping() {
 }
 
 .main-content {
-  max-width: 1400px;
+  max-width: 1760px;
   margin: 0 auto;
   padding: 20px;
   box-sizing: border-box;
@@ -495,7 +495,6 @@ function onGoShopping() {
 
 .points-info {
   .points-label {
-    font-size: 14px;
     opacity: 0.9;
   }
 
@@ -506,7 +505,6 @@ function onGoShopping() {
   }
 
   .points-total {
-    font-size: 13px;
     opacity: 0.8;
   }
 }
@@ -520,7 +518,6 @@ function onGoShopping() {
   :deep(.el-button) {
     width: 120px;
     height: 40px;
-    font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -562,7 +559,6 @@ function onGoShopping() {
   .category-item {
     padding: 8px 16px;
     border-radius: 20px;
-    font-size: 14px;
     color: #666;
     background-color: #f5f5f5;
     cursor: pointer;
@@ -588,8 +584,8 @@ function onGoShopping() {
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
 }
 
 .product-card {
@@ -621,7 +617,6 @@ function onGoShopping() {
     padding: 4px 8px;
     background: rgba(0, 0, 0, 0.6);
     color: #fff;
-    font-size: 12px;
     text-align: center;
 
     &.low {
@@ -638,7 +633,6 @@ function onGoShopping() {
 }
 
 .product-name {
-  font-size: 14px;
   color: #333;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -655,7 +649,6 @@ function onGoShopping() {
 
   .points-icon {
     color: #ffc107;
-    font-size: 14px;
   }
 
   .points-value {
@@ -665,13 +658,11 @@ function onGoShopping() {
   }
 
   .points-unit {
-    font-size: 12px;
     color: #999;
   }
 }
 
 .product-market {
-  font-size: 12px;
   color: #999;
   text-decoration: line-through;
 }
@@ -695,7 +686,6 @@ function onGoShopping() {
   margin-bottom: 10px;
 
   .record-name {
-    font-size: 16px;
     font-weight: 600;
     color: #333;
   }
@@ -707,19 +697,16 @@ function onGoShopping() {
   margin-bottom: 8px;
 
   .record-points {
-    font-size: 16px;
     font-weight: 600;
     color: #ff4400; /* 记录积分价格使用橙红色，参考淘宝价格颜色 */
   }
 
   .record-time {
-    font-size: 12px;
     color: #999;
   }
 }
 
 .record-detail {
-  font-size: 13px;
   color: #666;
 
   .detail-label {
@@ -751,14 +738,12 @@ function onGoShopping() {
   flex: 1;
 
   .task-name {
-    font-size: 16px;
     font-weight: 600;
     color: #333;
     margin-bottom: 4px;
   }
 
   .task-desc {
-    font-size: 13px;
     color: #999;
   }
 }
@@ -784,7 +769,6 @@ function onGoShopping() {
   .progress-text {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
     color: #999;
 
     .task-points {
@@ -799,14 +783,12 @@ function onGoShopping() {
   border-radius: 8px;
 
   .rules-title {
-    font-size: 16px;
     font-weight: 600;
     color: #333;
     margin-bottom: 15px;
   }
 
   .rules-content {
-    font-size: 14px;
     color: #666;
     line-height: 2;
 
@@ -819,6 +801,24 @@ function onGoShopping() {
 .empty-section {
   padding: 60px 20px;
   text-align: center;
+}
+
+@media (max-width: 1400px) {
+  .product-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 768px) {

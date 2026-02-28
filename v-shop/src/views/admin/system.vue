@@ -213,7 +213,7 @@ export default {
 
 <style lang="less" scoped>
 .system-page {
-  max-width: 1200px;
+  max-width: 1760px;
   margin: 0 auto;
 }
 

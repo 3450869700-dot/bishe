@@ -328,7 +328,6 @@ function getCounts() {
     width: auto;
     padding: 2px 8px;
     color: #fff;
-    font-size: 12px;
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 10px 0 0 10px;
     z-index: 20;
@@ -370,7 +369,6 @@ function getCounts() {
   }
 
   &-sub {
-    font-size: 12px;
     line-height: 24px;
     color: #000;
     display: flex;
@@ -415,7 +413,6 @@ function getCounts() {
     &-hd {
       color: var(--color-text-1);
       text-align: left;
-      font-size: 14px;
       font-weight: bold;
     }
 
@@ -424,13 +421,11 @@ function getCounts() {
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      font-size: 12px;
       color: var(--color-text-3);
     }
 
     &-arrow {
       margin-left: 2px;
-      font-size: 14px;
     }
   }
 }
@@ -454,7 +449,6 @@ function getCounts() {
 
       &-title {
         color: var(--color-text-1);
-        font-size: 12px;
       }
     }
   }
@@ -480,7 +474,6 @@ function getCounts() {
 
       &-title {
         color: var(--color-text-1);
-        font-size: 12px;
       }
     }
   }
@@ -501,14 +494,12 @@ function getCounts() {
       text-align: center;
 
       &-value {
-        font-size: 16px;
         font-weight: bold;
         color: #141414;
         margin-bottom: 10px;
       }
 
       &-label {
-        font-size: 12px;
         color: var(--color-text-2);
       }
     }
@@ -535,7 +526,7 @@ function getCounts() {
 }
 
 .main-content {
-  max-width: 1400px;
+  max-width: 1760px;
   margin: 0 auto;
   padding: 20px;
   box-sizing: border-box;
