@@ -34,13 +34,13 @@ public class Product {
     @Column(name = "grade")
     private String grade;
     
-    @Column(name = "spec_name")
+    @Column(name = "specification_desc")
     private String specName;
     
     @Column(name = "price")
     private String price;
     
-    @Column(name = "order quantity")
+    @Column(name = "order_quantity")
     private String orderQuantity;
     
     @Column(name = "heat")
@@ -52,8 +52,14 @@ public class Product {
     @Column(name = "address")
     private String address;
     
-    @Column(name = "photo_url")
+    @Column(name = "image")
     private String imageUrl;
+    
+    @Column(name = "rating")
+    private Double rating;
+    
+    @Column(name = "stock")
+    private Integer stock;
 
     // Getters and Setters
     public String getName() {
@@ -158,6 +164,22 @@ public class Product {
 
     public void setProductCode(Long productCode) {
         this.productCode = productCode;
+    }
+
+    public Double getRating() {
+        return rating;
+    }
+
+    public void setRating(Double rating) {
+        this.rating = rating;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
     }
 
 }

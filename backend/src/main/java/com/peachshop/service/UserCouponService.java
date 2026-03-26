@@ -43,4 +43,18 @@ public class UserCouponService {
     public long countByUserIdAndCouponId(Long userId, Long couponId) {
         return userCouponRepository.countByUserIdAndCouponId(userId, couponId);
     }
+    
+    /**
+     * 查询所有用户的优惠券领取数量
+     */
+    public List<Object[]> findCountByUserIdGroupByUserId() {
+        return userCouponRepository.findCountByUserIdGroupByUserId();
+    }
+    
+    /**
+     * 查询每个优惠券的总领取数量
+     */
+    public List<Object[]> findCountByCouponIdGroupByCouponId() {
+        return userCouponRepository.findCountByCouponIdGroupByCouponId();
+    }
 }

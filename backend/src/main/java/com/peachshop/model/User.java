@@ -4,11 +4,12 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "user")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id")
+    private Long userId;
     
     private String username;
     private String password;
@@ -19,19 +20,39 @@ public class User {
     private String province;
     private String city;
     
+    @Column(name = "is_valid")
+    private Integer isValid = 1;
+    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    @Column(name = "score")
+    private Integer score = 0;
+    
+    @Column(name = "balance")
+    private Double balance = 0.0;
+    
+    @Column(name = "growth")
+    private Integer growth = 0;
+    
     // Getters and Setters
     public Long getId() {
-        return id;
+        return userId;
     }
     
     public void setId(Long id) {
-        this.id = id;
+        this.userId = id;
+    }
+    
+    public Long getUserId() {
+        return userId;
+    }
+    
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
     
     public String getUsername() {
@@ -112,5 +133,37 @@ public class User {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    public Integer getScore() {
+        return score;
+    }
+    
+    public void setScore(Integer score) {
+        this.score = score;
+    }
+    
+    public Double getBalance() {
+        return balance;
+    }
+    
+    public void setBalance(Double balance) {
+        this.balance = balance;
+    }
+    
+    public Integer getGrowth() {
+        return growth;
+    }
+    
+    public void setGrowth(Integer growth) {
+        this.growth = growth;
+    }
+    
+    public Integer getIsValid() {
+        return isValid;
+    }
+    
+    public void setIsValid(Integer isValid) {
+        this.isValid = isValid;
     }
 }

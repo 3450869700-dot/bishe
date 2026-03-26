@@ -78,7 +78,7 @@ public class ProductService {
             
             // 实际表结构（根据数据库查询结果）：
             // 0: name, 1: weight, 2: packet, 3: variety, 4: grade, 5: specification_desc
-            // 6: price, 7: min_order, 8: stock, 9: shop, 10: address, 11: image_url, 12: product_code
+            // 6: price, 7: order_quantity, 8: heat, 9: shop, 10: address, 11: image_url, 12: product_code
             
             // 获取商品名称（索引0）
             String productName = rawProduct[0] != null ? rawProduct[0].toString().trim() : "";
@@ -117,6 +117,8 @@ public class ProductService {
             product.setGrade(rawProduct[4] != null ? rawProduct[4].toString() : "");
             // shop 在索引9
             product.setShop(rawProduct[9] != null ? rawProduct[9].toString() : "");
+            // heat 在索引8
+            product.setHeat(rawProduct[8] != null ? rawProduct[8].toString() : "0");
 
             // 打印最终映射结果
             System.out.println("=== Product " + (i+1) + " Final Mapping ===");
@@ -163,18 +165,20 @@ public class ProductService {
             return Optional.empty();
         }
         
-        // 直接使用Repository查询，避免全表遍历
-        // 将Long转换为String，因为Repository现在接受String参数
+        // 从getAllProducts()获取的所有商品中查找对应ID的商品
+        // 这样可以确保字段映射正确，因为getAllProducts()使用手动字段映射
         try {
-            Product product = productRepository.findByProductCode(id.toString());
-            if (product != null) {
-                System.out.println("=== ProductService: Found product with code=" + id + ", name=" + product.getName());
-                return Optional.of(product);
-            } else {
-                System.out.println("=== ProductService: Product not found with code=" + id);
+            List<Product> allProducts = getAllProducts();
+            for (Product product : allProducts) {
+                if (product.getProductCode() != null && product.getProductCode().equals(id)) {
+                    System.out.println("=== ProductService: Found product with code=" + id + ", name=" + product.getName());
+                    return Optional.of(product);
+                }
             }
+            System.out.println("=== ProductService: Product not found with code=" + id);
         } catch (Exception e) {
             System.out.println("=== ProductService: Error finding product with code=" + id + ": " + e.getMessage());
+            e.printStackTrace();
         }
         
         return Optional.empty();

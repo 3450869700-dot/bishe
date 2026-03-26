@@ -21,6 +21,9 @@ public class ShoppingCartService {
     
     @Autowired
     private ProductRepository productRepository;
+    
+    @Autowired
+    private ProductService productService;
 
     public List<Map<String, Object>> getAllShoppingCartItems() {
         System.out.println("=== ShoppingCartService: Using native SQL to get all shopping cart items ===");
@@ -57,9 +60,10 @@ public class ShoppingCartService {
                 // 尝试获取商品详情
                 try {
                     if (productCode != null) {
-                        // 将Long转换为String传递给Repository
-                        Product product = productRepository.findByProductCode(productCode.toString());
-                        if (product != null) {
+                        // 使用ProductService获取商品详情，避免字段映射问题
+                        Optional<Product> productOpt = productService.getProductById(productCode);
+                        if (productOpt.isPresent()) {
+                            Product product = productOpt.get();
                             // 设置商品详情
                             itemMap.put("productName", product.getName());
                             itemMap.put("productImage", product.getImageUrl());
@@ -137,9 +141,10 @@ public class ShoppingCartService {
                 // 尝试获取商品详情
                 try {
                     if (productCode != null) {
-                        // 将Long转换为String传递给Repository
-                        Product product = productRepository.findByProductCode(productCode.toString());
-                        if (product != null) {
+                        // 使用ProductService获取商品详情，避免字段映射问题
+                        Optional<Product> productOpt = productService.getProductById(productCode);
+                        if (productOpt.isPresent()) {
+                            Product product = productOpt.get();
                             // 设置商品详情
                             itemMap.put("productName", product.getName());
                             itemMap.put("productImage", product.getImageUrl());
@@ -159,7 +164,7 @@ public class ShoppingCartService {
                     e.printStackTrace();
                 }
             }
-            
+
             items.add(itemMap);
             
             // 调试：打印每个购物车项的信息

@@ -183,7 +183,51 @@ public class DiscountController {
         Map<String, Object> response = new HashMap<>();
         response.put("code", 0);
         response.put("msg", "success");
-        response.put("data", new HashMap<>()); // 返回空对象
+        
+        // 获取用户ID，默认值为1
+        Long userId = 1L;
+        if (params.containsKey("userId")) {
+            try {
+                userId = Long.parseLong(params.get("userId").toString());
+            } catch (Exception e) {
+                System.out.println("=== getDiscountStatistics: Invalid userId, using default: " + userId);
+            }
+        }
+        
+        // 获取所有用户的优惠券领取统计
+        List<Object[]> userStatistics = userCouponService.findCountByUserIdGroupByUserId();
+        // 获取每个优惠券的总领取数量
+        List<Object[]> couponStatistics = userCouponService.findCountByCouponIdGroupByCouponId();
+        
+        Map<String, Object> result = new HashMap<>();
+        
+        // 存储用户统计信息
+        Map<String, Map<String, Object>> userStats = new HashMap<>();
+        for (Object[] stat : userStatistics) {
+            Long uid = (Long) stat[0];
+            Long count = (Long) stat[1];
+            Map<String, Object> userStat = new HashMap<>();
+            userStat.put("totalReceived", count);
+            userStats.put(uid.toString(), userStat);
+        }
+        result.put("userStats", userStats);
+        
+        // 存储优惠券统计信息
+        Map<String, Map<String, Object>> couponStats = new HashMap<>();
+        for (Object[] stat : couponStatistics) {
+            Long couponId = (Long) stat[0];
+            Long count = (Long) stat[1];
+            Map<String, Object> couponStat = new HashMap<>();
+            couponStat.put("totalReceived", count);
+            couponStats.put(couponId.toString(), couponStat);
+        }
+        result.put("couponStats", couponStats);
+        
+        // 获取当前用户可用的优惠券数量（状态为1表示未使用）
+        List<UserCoupon> userCoupons = userCouponService.findByUserIdAndUseStatus(userId, 1);
+        result.put("canUse", userCoupons.size());
+        
+        response.put("data", result);
         return ResponseEntity.ok(response);
     }
 }

@@ -427,6 +427,7 @@ public class ProductController {
             basicInfo.put("characteristic", product.getVariety() != null ? product.getVariety() : ""); // 使用品种作为特性
             basicInfo.put("shop", product.getShop()); // 添加店铺信息
             basicInfo.put("grade", product.getGrade()); // 添加等级信息
+            basicInfo.put("heat", product.getHeat()); // 添加热度信息
             productDetail.put("basicInfo", basicInfo);
             
             // 构建物流信息

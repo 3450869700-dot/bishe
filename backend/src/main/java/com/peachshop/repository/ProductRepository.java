@@ -24,8 +24,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Long countProducts();
     
     /**
-     * 根据商品编码获取商品
+     * 根据商品编码获取商品 - 使用JPA自动查询避免字段映射问题
      */
-    @Query(value = "SELECT * FROM products WHERE CAST(product_code AS VARCHAR) = :productCode", nativeQuery = true)
-    Product findByProductCode(@Param("productCode") String productCode);
+    Product findByProductCode(Long productCode);
 }
