@@ -48,6 +48,13 @@ export const useUserStore = defineStore({
         this.token = token;
         goodStorage.set('token', token);
 
+        // 普通用户登录时，清除万能账户状态
+        if (this.isOmnipotent) {
+          this.isOmnipotent = false;
+          goodStorage.set('isOmnipotent', false);
+          console.log('=== login - cleared omnipotent state for normal user');
+        }
+
         // 登录成功后获取用户详情
         await this.getUserDetail();
 

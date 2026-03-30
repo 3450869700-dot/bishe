@@ -174,7 +174,8 @@ function onSubmit() {
 }
 
 function onGoDetail(id: number) {
-  router.push(`/good/detail?id=${id}`);
+  const url = router.resolve(`/good/detail?id=${id}`);
+  window.open(url.href, '_blank');
 }
 
 function onGoShopping() {

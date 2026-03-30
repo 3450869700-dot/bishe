@@ -270,7 +270,8 @@ function setupScrollPreload() {
 }
 
 function onGoodClicked(id: number) {
-  router.push({ path: '/good/detail', query: { id } });
+  const url = router.resolve({ path: '/good/detail', query: { id } });
+  window.open(url.href, '_blank');
 }
 
 // 商品卡片悬停时预加载详情

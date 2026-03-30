@@ -49,8 +49,63 @@ const listLoading = ref(true);
 const exchangeShow = ref(false);
 const showCouponDetail = ref(false);
 const currentCoupon = ref<Recordable | null>(null);
+const popupHeight = ref(500); // 初始弹窗高度
+const isDragging = ref(false);
+const startY = ref(0);
+const startHeight = ref(0);
 const receiveLimit = ref({ perPerson: 3, perDay: 10 });
 const receivedCount = ref(5);
+// 存储所有账号的优惠券领取统计
+const accountStatistics = ref<Recordable[]>([]);
+
+// 处理拖拽开始
+function handleDragStart(event: MouseEvent) {
+  console.log('Drag start:', event.clientY, popupHeight.value);
+  // 阻止默认行为和冒泡，确保事件被正确捕获
+  event.preventDefault();
+  event.stopPropagation();
+
+  isDragging.value = true;
+  startY.value = event.clientY;
+  startHeight.value = popupHeight.value;
+
+  // 添加事件监听器
+  document.addEventListener('mousemove', onDrag);
+  document.addEventListener('mouseup', stopDrag);
+
+  // 添加鼠标离开窗口的处理
+  document.addEventListener('mouseleave', stopDrag);
+}
+
+// 拖拽中
+function onDrag(event: MouseEvent) {
+  if (!isDragging.value) return;
+
+  console.log('Dragging:', event.clientY, startY.value, popupHeight.value);
+
+  const deltaY = event.clientY - startY.value;
+  let newHeight = startHeight.value - deltaY;
+
+  // 限制高度范围
+  newHeight = Math.max(300, Math.min(800, newHeight));
+  console.log('New height:', newHeight);
+  popupHeight.value = newHeight;
+
+  // 直接操作 DOM 元素
+  const popupElement = document.querySelector('.van-popup--bottom');
+  if (popupElement) {
+    popupElement.style.height = newHeight + 'px';
+  }
+}
+
+// 停止拖拽
+function stopDrag() {
+  console.log('Drag stopped');
+  isDragging.value = false;
+  document.removeEventListener('mousemove', onDrag);
+  document.removeEventListener('mouseup', stopDrag);
+  document.removeEventListener('mouseleave', stopDrag);
+}
 
 const filteredList = computed(() => {
   if (filterType.value === 'all') return list.value;
@@ -121,6 +176,7 @@ function transformUserCouponData(userCoupons) {
       id: item.userCouponId,
       name: couponInfo ? couponInfo.coupon_name : `优惠券 ${item.couponId}`, // 使用真实的优惠券名称
       money: couponInfo ? (couponInfo.coupon_type === 3 ? couponInfo.face_value : couponInfo.face_value) : 20, // 使用真实的金额或默认值
+      coupon_type: couponInfo ? couponInfo.coupon_type : 1, // 保存优惠券类型
       moneyHreshold: couponInfo ? couponInfo.min_amount : 100, // 使用真实的使用门槛或默认值
       status: status,
       useRange: couponInfo
@@ -131,8 +187,8 @@ function transformUserCouponData(userCoupons) {
           : '指定商品'
         : '全场通用', // 使用真实的使用范围
       description: '优惠券描述',
-      canReceive: false,
-      received: true,
+      canReceive: status === 0, // 只有可用的优惠券才能领取
+      received: status === 0 || status === 2, // 可用和已过期的优惠券标记为已领取
       useTime: item.useTime,
       orderId: item.orderId,
       dateStart: item.receiveTime,
@@ -142,21 +198,62 @@ function transformUserCouponData(userCoupons) {
 }
 
 // 数据转换：将后端返回的Coupon对象转换为前端期望的格式
-function transformCouponData(coupons) {
-  return coupons.map((item) => ({
-    id: item.couponId,
-    coupon_name: item.couponName,
-    coupon_type: item.couponType,
-    face_value: item.faceValue,
-    min_amount: item.minAmount,
-    product_scope: item.productScope,
-    start_time: item.startTime,
-    end_time: item.endTime,
-    total_quantity: item.totalQuantity,
-    remain_quantity: item.remainQuantity,
-    user_limit: item.userLimit,
-    is_valid: item.isValid,
-  }));
+function transformCouponData(coupons, stats = []) {
+  // 创建统计信息映射，方便快速查找
+  const statsMap = new Map();
+
+  // 处理不同类型的stats参数
+  if (Array.isArray(stats)) {
+    // 如果是数组，遍历每个元素
+    stats.forEach((stat) => {
+      if (stat.couponId) {
+        statsMap.set(stat.couponId, stat);
+      }
+    });
+  } else if (stats && typeof stats === 'object') {
+    // 如果是对象，检查是否有couponStats属性
+    if (stats.couponStats && typeof stats.couponStats === 'object') {
+      // 遍历couponStats中的每个优惠券统计信息
+      Object.entries(stats.couponStats).forEach(([couponId, value]) => {
+        const stat = value as Recordable;
+        statsMap.set(couponId, stat);
+      });
+    } else {
+      // 兼容旧格式
+      Object.entries(stats).forEach(([key, value]) => {
+        const stat = value as Recordable;
+        if (stat.couponId) {
+          statsMap.set(stat.couponId, stat);
+        }
+      });
+    }
+  }
+
+  return coupons.map((item) => {
+    // 获取该优惠券的统计信息（使用字符串类型的couponId作为键）
+    const stat = statsMap.get(item.couponId.toString());
+
+    // 计算剩余数量：总数量 - 所有账号领取的数量
+    let remainQuantity = item.remainQuantity;
+    if (stat && stat.totalReceived !== undefined) {
+      remainQuantity = item.totalQuantity - stat.totalReceived;
+    }
+
+    return {
+      id: item.couponId,
+      coupon_name: item.couponName,
+      coupon_type: item.couponType,
+      face_value: item.faceValue,
+      min_amount: item.minAmount,
+      product_scope: item.productScope,
+      start_time: item.startTime,
+      end_time: item.endTime,
+      total_quantity: item.totalQuantity,
+      remain_quantity: remainQuantity,
+      user_limit: item.userLimit,
+      is_valid: item.isValid,
+    };
+  });
 }
 
 function getDataList() {
@@ -167,23 +264,24 @@ function getDataList() {
 
   // 使用requestAnimationFrame确保DOM更新在浏览器重绘前完成，提高流畅度
   requestAnimationFrame(() => {
-    if (currentTab.type === 'unreceived') {
-      // 待领取优惠券，从coupon表获取
-      getUnreceivedCoupons();
-    } else {
-      // 获取所有优惠券（不限制状态），然后在前端根据实际状态过滤
-      const userId = userStore.getUserInfo?.user_id || userStore.getUserInfo?.id || 1;
-      API_DISCOUNTS.discountsMy({ userId })
-        .then((res) => {
-          // 使用requestAnimationFrame确保数据更新在浏览器重绘前完成
-          requestAnimationFrame(() => {
-            // 转换后端返回的数据格式（包含过期检查）
-            const allCoupons = transformUserCouponData(res.data || []);
+    // 先获取待领取优惠券数据，确保transformUserCouponData可以获取到优惠券信息
+    getUnreceivedCoupons()
+      .then(() => {
+        // 然后获取用户优惠券数据用于数量显示
+        const userId = userStore.getUserInfo?.user_id || userStore.getUserInfo?.id || 1;
+        return API_DISCOUNTS.discountsMy({ userId });
+      })
+      .then((res) => {
+        // 使用requestAnimationFrame确保数据更新在浏览器重绘前完成
+        requestAnimationFrame(() => {
+          // 转换后端返回的数据格式（包含过期检查）
+          const allCoupons = transformUserCouponData(res.data || []);
 
-            // 保存所有优惠券用于计数
-            allUserCoupons.value = allCoupons;
+          // 保存所有优惠券用于计数
+          allUserCoupons.value = allCoupons;
 
-            // 根据当前标签过滤显示
+          // 根据当前标签过滤显示
+          if (currentTab.type !== 'unreceived') {
             if (currentTab.type === 'available') {
               // 可用：状态为0（未使用且未过期）
               list.value = allCoupons.filter((item) => item.status === 0);
@@ -196,46 +294,78 @@ function getDataList() {
             } else {
               list.value = allCoupons;
             }
-          });
-        })
-        .catch(() => {
-          // 错误时使用空数组
-          requestAnimationFrame(() => {
-            list.value = [];
-          });
-        })
-        .finally(() => {
-          // 延迟一点时间再隐藏加载状态，避免闪烁
-          setTimeout(() => {
-            listLoading.value = false;
-          }, 100);
+          }
         });
-    }
+      })
+      .catch(() => {
+        // 错误时使用空数组
+        requestAnimationFrame(() => {
+          allUserCoupons.value = [];
+          if (currentTab.type !== 'unreceived') {
+            list.value = [];
+          }
+        });
+      })
+      .finally(() => {
+        // 立即隐藏加载状态，避免抖动
+        listLoading.value = false;
+      });
   });
 }
 
 function getUnreceivedCoupons() {
   // 从后端API获取待领取优惠券
-  API_DISCOUNTS.discountsCoupons()
-    .then((res) => {
-      // 使用requestAnimationFrame确保DOM更新在浏览器重绘前完成
-      requestAnimationFrame(() => {
-        // 转换后端返回的数据格式
-        unreceivedList.value = transformCouponData(res.data || []);
+  return new Promise((resolve, reject) => {
+    // 先获取优惠券列表
+    API_DISCOUNTS.discountsCoupons()
+      .then((couponsRes) => {
+        // 然后获取优惠券统计信息
+        return API_DISCOUNTS.discountsStatistics().then((statsRes) => {
+          return { coupons: couponsRes.data || [], stats: statsRes.data || [] };
+        });
+      })
+      .then(({ coupons, stats }) => {
+        // 使用requestAnimationFrame确保DOM更新在浏览器重绘前完成
+        requestAnimationFrame(() => {
+          // 转换后端返回的数据格式，并计算剩余数量
+          unreceivedList.value = transformCouponData(coupons, stats);
+          // 存储所有账号的优惠券领取统计
+          // 检查stats是否为对象，如果是对象，转换为数组
+          if (stats && typeof stats === 'object' && !Array.isArray(stats)) {
+            // 检查是否有userStats属性
+            if (stats.userStats && typeof stats.userStats === 'object') {
+              // 从userStats中获取账号统计信息
+              accountStatistics.value = Object.entries(stats.userStats).map(([accountId, data]) => ({
+                accountId,
+                ...(data as Recordable),
+              }));
+            } else {
+              // 兼容旧格式
+              accountStatistics.value = Object.entries(stats).map(([accountId, data]) => ({
+                accountId,
+                ...(data as Recordable),
+              }));
+            }
+          } else if (Array.isArray(stats)) {
+            accountStatistics.value = stats;
+          } else {
+            accountStatistics.value = [];
+          }
+          // 打印统计信息，查看数据格式
+          console.log('优惠券统计信息:', JSON.stringify(stats, null, 2));
+          console.log('处理后的账号统计:', JSON.stringify(accountStatistics.value, null, 2));
+          resolve();
+        });
+      })
+      .catch((error) => {
+        // 错误时使用空数组
+        requestAnimationFrame(() => {
+          unreceivedList.value = [];
+          accountStatistics.value = [];
+          reject(error);
+        });
       });
-    })
-    .catch(() => {
-      // 错误时使用空数组
-      requestAnimationFrame(() => {
-        unreceivedList.value = [];
-      });
-    })
-    .finally(() => {
-      // 延迟一点时间再隐藏加载状态，避免闪烁
-      setTimeout(() => {
-        listLoading.value = false;
-      }, 100);
-    });
+  });
 }
 
 // 移除模拟数据函数，使用真实的后端API数据
@@ -485,7 +615,7 @@ function onGoShopping() {
               </template>
             </van-tab>
           </van-tabs>
-          <div v-if="activeTab === 0" class="filter-section">
+          <div class="filter-section" :class="{ 'filter-hidden': activeTab !== 0 }">
             <el-select v-model="filterType" placeholder="筛选" size="small" @change="onFilterChange">
               <el-option v-for="item in filterOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
@@ -503,7 +633,12 @@ function onGoShopping() {
           <template v-if="unref(tabList)[unref(activeTab)].type === 'unreceived'">
             <template v-if="unreceivedList.length">
               <div class="coupon-cards">
-                <div v-for="item in unreceivedList" :key="item.id" class="coupon-card" @click="onShowDetail(item)">
+                <div
+                  v-for="item in unreceivedList"
+                  :key="item.id"
+                  class="coupon-card unreceived"
+                  @click="onShowDetail(item)"
+                >
                   <div class="coupon-left">
                     <div class="coupon-amount">
                       <span class="symbol" :data-symbol="item.coupon_type === 3 ? '折' : '¥'">{{
@@ -513,9 +648,7 @@ function onGoShopping() {
                         item.coupon_type === 3 ? (item.face_value * 10).toFixed(1) : item.face_value
                       }}</span>
                     </div>
-                    <div class="coupon-threshold">
-                      {{ item.min_amount > 0 ? `满${item.min_amount}可用` : '无门槛' }}
-                    </div>
+                    <div class="coupon-threshold">{{ thresholdTitle(item.min_amount) }}</div>
                   </div>
                   <div class="coupon-divider"></div>
                   <div class="coupon-right">
@@ -556,8 +689,12 @@ function onGoShopping() {
                 >
                   <div class="coupon-left">
                     <div class="coupon-amount">
-                      <span class="symbol" data-symbol="¥">¥</span>
-                      <span class="value">{{ item.money }}</span>
+                      <span class="symbol" :data-symbol="item.coupon_type === 3 ? '折' : '¥'">
+                        {{ item.coupon_type === 3 ? '折' : '¥' }}
+                      </span>
+                      <span class="value">{{
+                        item.coupon_type === 3 ? (item.money * 10).toFixed(1) : item.money
+                      }}</span>
                     </div>
                     <div class="coupon-threshold">{{ thresholdTitle(item.moneyHreshold) }}</div>
                   </div>
@@ -623,13 +760,26 @@ function onGoShopping() {
           </div>
         </div>
 
+        <!-- 所有账号优惠券领取统计 -->
+        <div v-if="false && activeTab === 0 && accountStatistics.length > 0" class="account-statistics">
+          <div class="tips-title">账号领取统计</div>
+          <div class="stats-content">
+            <div v-for="stat in accountStatistics" :key="stat.accountId" class="stat-item">
+              <div class="stat-label">账号 {{ stat.accountId }}</div>
+              <div class="stat-value">共领取 {{ stat.totalReceived || 0 }} 张优惠券</div>
+            </div>
+          </div>
+        </div>
+
         <div v-if="activeTab === 1 && list.length > 0" class="usage-records">
           <div class="section-title">使用记录</div>
           <div class="record-list">
             <div v-for="item in list" :key="item.id" class="record-item">
               <div class="record-info">
                 <span class="record-name">{{ item.name }}</span>
-                <span class="record-amount">-¥{{ item.money }}</span>
+                <span class="record-amount">
+                  {{ item.coupon_type === 3 ? (item.money * 10).toFixed(1) + '折' : '-¥' + item.money }}
+                </span>
               </div>
               <div class="record-detail">
                 <span class="record-time">{{ item.usedTime }}</span>
@@ -641,9 +791,10 @@ function onGoShopping() {
       </div>
     </main>
 
-    <van-popup v-model:show="showCouponDetail" round position="bottom" style="height: 60%">
+    <van-popup v-model:show="showCouponDetail" :style="{ height: popupHeight + 'px' }" round position="bottom">
       <div v-if="currentCoupon" class="coupon-detail-popup">
         <div class="detail-header">
+          <div class="drag-handle" @mousedown="handleDragStart"></div>
           <h3>优惠券详情</h3>
           <van-icon name="close" size="24" @click="showCouponDetail = false" />
         </div>
@@ -720,11 +871,16 @@ function onGoShopping() {
               <span class="value">{{ currentCoupon.orderId }}</span>
             </div>
           </div>
-        </div>
-        <div v-if="currentCoupon.status === 0 && currentCoupon.canReceive" class="detail-footer">
-          <el-button type="primary" block :disabled="currentCoupon.received" @click="onReceiveCoupon(currentCoupon)">
-            {{ currentCoupon.received ? '已领取' : '立即领取' }}
-          </el-button>
+          <div v-if="currentCoupon.status === 0 && currentCoupon.canReceive" class="detail-footer">
+            <el-button
+              type="primary"
+              :disabled="currentCoupon.received"
+              style="width: 200px"
+              @click="onReceiveCoupon(currentCoupon)"
+            >
+              {{ currentCoupon.received ? '已领取' : '立即领取' }}
+            </el-button>
+          </div>
         </div>
       </div>
     </van-popup>
@@ -837,6 +993,13 @@ function onGoShopping() {
 
   .filter-section {
     margin-left: 20px;
+    transition: all 0.3s ease-in-out;
+    min-width: 120px;
+  }
+
+  .filter-hidden {
+    opacity: 0;
+    pointer-events: none;
   }
 }
 
@@ -858,9 +1021,10 @@ function onGoShopping() {
   overflow: hidden;
   position: relative;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: box-shadow 0.3s ease;
   background-color: #fff;
   min-height: 160px;
+  height: 160px;
 
   &:hover {
     transform: translateY(-2px);
@@ -901,6 +1065,13 @@ function onGoShopping() {
   background-position: center;
   background-repeat: no-repeat;
   min-height: 120px;
+}
+
+.coupon-card.unreceived .coupon-left {
+  background-image: url('@/assets/images/coupon.png');
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .coupon-amount {
@@ -1035,8 +1206,50 @@ function onGoShopping() {
   }
 }
 
+.account-statistics {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #fafafa;
+  border-radius: 8px;
+
+  .tips-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+  }
+
+  .stats-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      background-color: #fff;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+      .stat-label {
+        color: #333;
+        font-weight: 500;
+      }
+
+      .stat-value {
+        color: #ff4400;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
 .usage-records {
   margin-top: 30px;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+  max-height: 500px;
 
   .section-title {
     font-weight: 600;
@@ -1103,6 +1316,32 @@ function onGoShopping() {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    position: relative;
+
+    .drag-handle {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      width: 60px;
+      height: 10px;
+      background-color: transparent;
+      border-radius: 5px;
+      cursor: ns-resize;
+      z-index: 10;
+    }
+
+    .drag-handle::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 4px;
+      background-color: #999;
+      border-radius: 2px;
+    }
 
     h3 {
       margin: 0;
@@ -1114,6 +1353,8 @@ function onGoShopping() {
   .detail-content {
     flex: 1;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
 
   .detail-coupon {
@@ -1161,8 +1402,11 @@ function onGoShopping() {
   }
 
   .detail-footer {
-    padding-top: 20px;
+    margin-top: 15px;
+    padding-top: 15px;
     border-top: 1px solid #eaeaea;
+    display: flex;
+    justify-content: center;
   }
 }
 </style>

@@ -18,13 +18,13 @@ import API_CART from '@/apis/cart';
 // components
 import Navbar from '@/components/Navbar/index.vue';
 // 懒加载组件
-const Coupons = defineAsyncComponent(() => import('./components/Coupons.vue'));
 const Reputations = defineAsyncComponent(() => import('./components/Reputations.vue'));
 // store
 import { useOrderStore } from '@/store/modules/order';
 import { useUserStore } from '@/store/modules/user';
 // hooks
 import { usePage } from '@/hooks/shared/usePage';
+import { useProductView, useRecordCart } from '@/hooks/shared/useBehavior';
 import { ElDialog, ElInputNumber, ElButton } from 'element-plus';
 
 // 缓存相关配置
@@ -84,6 +84,22 @@ const router = useRouter();
 const orderStore = useOrderStore();
 const userStore = useUserStore();
 const { hasLogin, isOmnipotent } = usePage();
+
+// 记录商品浏览行为（在setup中直接调用）
+const goodsIdForBehavior = computed(() => {
+  const idParam = route.query.id;
+  if (!idParam) return null;
+  const id = Array.isArray(idParam) ? idParam[0] : idParam;
+  const numId = Number(id);
+  return isNaN(numId) ? null : numId;
+});
+
+// 在页面挂载后记录浏览行为（确保用户状态已恢复）
+onMounted(() => {
+  if (hasLogin.value && goodsIdForBehavior.value) {
+    useProductView(goodsIdForBehavior.value);
+  }
+});
 
 const picList = ref<Recordable[]>([]);
 const basicInfo = ref<Recordable>({});
@@ -194,6 +210,10 @@ function confirmAddToCart() {
       console.log('加入购物车成功:', res);
       if (res.code === 0) {
         showToast('已成功加入购物车');
+        // 记录加购行为
+        if (productCode) {
+          useRecordCart(productCode);
+        }
         cartDialogVisible.value = false;
         getCartCount();
       } else {
@@ -507,53 +527,6 @@ function handleFavorite() {
                       />
                     </van-swipe-item>
                   </van-swipe>
-                  <!-- 左右切换按钮 -->
-                  <div
-                    class="image-nav-buttons"
-                    style="
-                      position: absolute;
-                      top: 50%;
-                      left: 0;
-                      right: 0;
-                      transform: translateY(-50%);
-                      display: flex;
-                      justify-content: space-between;
-                      padding: 0 10px;
-                    "
-                  >
-                    <button
-                      class="nav-button"
-                      style="
-                        width: 30px;
-                        height: 30px;
-                        border-radius: 50%;
-                        background-color: rgba(255, 255, 255, 0.8);
-                        border: none;
-                        cursor: pointer;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                      "
-                    >
-                      <span style="font-size: 16px; font-weight: bold">&lt;</span>
-                    </button>
-                    <button
-                      class="nav-button"
-                      style="
-                        width: 30px;
-                        height: 30px;
-                        border-radius: 50%;
-                        background-color: rgba(255, 255, 255, 0.8);
-                        border: none;
-                        cursor: pointer;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                      "
-                    >
-                      <span style="font-size: 16px; font-weight: bold">&gt;</span>
-                    </button>
-                  </div>
                 </div>
               </div>
             </td>
@@ -578,6 +551,12 @@ function handleFavorite() {
                   style="font-size: 22px !important; font-weight: bold; color: #ff4400; margin-bottom: 20px"
                 >
                   ¥{{ goodPrice }}
+                </div>
+
+                <!-- 热度 -->
+                <div class="product-heat" style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px">
+                  <span style="font-size: 14px; color: #666">热度:</span>
+                  <span style="font-size: 16px; color: #ff4400; font-weight: 600">{{ basicInfo.heat || '0' }}</span>
                 </div>
 
                 <!-- 规格选择 -->
@@ -687,7 +666,6 @@ function handleFavorite() {
 
       <!-- 下半部分内容容器 -->
       <div v-if="!loading" class="bottom-content">
-        <Coupons title="领券" />
         <van-cell>
           <template #title>
             <div class="cell-bar">

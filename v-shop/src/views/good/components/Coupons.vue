@@ -101,20 +101,28 @@ defineExpose({
       <div class="coupons-body">
         <div class="coupon-list">
           <div v-for="(item, index) in couponList" :key="item.id" class="coupon-list-item">
-            <div class="coupon-list-item-hd">
-              <div class="coupon-list-item-money"><span class="fz12">¥</span>{{ item.moneyMin }}</div>
-              <div class="coupon-list-item-moneyHreshold">满{{ item.moneyHreshold }}元可用</div>
-            </div>
-            <div class="coupon-list-item-bd">
-              <div class="coupon-list-item-name">{{ item.moneyMin }}元券</div>
-              <div v-if="item.dateEndType === 0" class="coupon-list-item-dateEndDays">
-                领取后 {{ item.dateEnd.slice(0, 10) }} 到期
+            <div class="coupon-list-item-content">
+              <div class="coupon-list-item-hd">
+                <div class="coupon-list-item-money"><span class="fz12">¥</span>{{ item.moneyMin }}</div>
+                <div class="coupon-list-item-moneyHreshold">满{{ item.moneyHreshold }}元可用</div>
               </div>
-              <div v-if="item.dateEndType === 1" class="coupon-list-item-dateEndDays">
-                领取后 {{ item.dateEndDays }} 天后到期
+              <div class="coupon-list-item-bd">
+                <div class="coupon-list-item-name">{{ item.moneyMin }}元券</div>
+                <div v-if="item.dateEndType === 0" class="coupon-list-item-dateEndDays">
+                  领取后 {{ item.dateEnd.slice(0, 10) }} 到期
+                </div>
+                <div v-if="item.dateEndType === 1" class="coupon-list-item-dateEndDays">
+                  领取后 {{ item.dateEndDays }} 天后到期
+                </div>
               </div>
             </div>
-            <div class="coupon-list-item-btn" @click="onItemClicked(index)">立即领取</div>
+            <div
+              class="coupon-list-item-btn"
+              style="display: block; margin: 0 auto; text-align: center; margin-top: 8px"
+              @click="onItemClicked(index)"
+            >
+              立即领取
+            </div>
           </div>
         </div>
       </div>
@@ -166,58 +174,84 @@ defineExpose({
     text-align: center;
   }
 }
+
+/* 优惠券项容器 */
 .coupon-list-item {
   box-sizing: border-box;
-  height: 76px;
+  min-height: 80px;
   position: relative;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
   background: #ffeeee;
   color: #ff4b52;
   margin-bottom: 10px;
   border-radius: 10px;
+  padding: 10px 15px;
+  display: flex;
+  flex-direction: column;
+}
 
-  &-hd {
-    width: 100px;
-    text-align: center;
-    border-right: 1px slategrey #eee;
-  }
-  &-money {
-    font-size: 24px;
-    font-weight: bold;
-    // margin-bottom:10px;
-  }
-  &-moneyHreshold {
-    font-size: 12px;
-  }
-  &-bd {
-    flex: 1;
-  }
-  &-name {
-    font-size: 14px;
-    padding: 5px 0;
-  }
-  &-dateEndDays {
-    font-size: 12px;
-    color: #d7a0a5;
-  }
-  &-btn {
-    margin-right: 25px;
-    display: inline-block;
-    padding: 0.2em 0.5em;
-    color: #fff;
-    background: #ff4444;
-    font-size: 10px;
-    line-height: normal;
-    border-radius: 0.8em;
-  }
-  &-btn-clicked {
-    color: #ff4444;
-    background: #ffffff;
-    border: 1px solid #ff4444;
-    pointer-events: none;
-  }
+/* 优惠券内容区域 */
+.coupon-list-item-content {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+/* 优惠券头部（金额部分） */
+.coupon-list-item-hd {
+  width: 100px;
+  text-align: center;
+  border-right: 1px solid #eee;
+}
+
+/* 金额 */
+.coupon-list-item-money {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* 使用门槛 */
+.coupon-list-item-moneyHreshold {
+  font-size: 12px;
+}
+
+/* 优惠券主体内容 */
+.coupon-list-item-bd {
+  flex: 1;
+  padding-left: 15px;
+}
+
+/* 优惠券名称 */
+.coupon-list-item-name {
+  font-size: 14px;
+  padding: 5px 0;
+}
+
+/* 到期时间 */
+.coupon-list-item-dateEndDays {
+  font-size: 12px;
+  color: #d7a0a5;
+}
+
+/* 立即领取按钮 */
+.coupon-list-item-btn {
+  display: block;
+  margin: 0 auto;
+  padding: 6px 20px;
+  color: #fff;
+  background: #ff4444;
+  font-size: 12px;
+  line-height: normal;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 5px;
+}
+
+/* 已领取按钮 */
+.coupon-list-item-btn-clicked {
+  color: #ff4444;
+  background: #ffffff;
+  border: 1px solid #ff4444;
+  pointer-events: none;
 }
 
 .mb10 {

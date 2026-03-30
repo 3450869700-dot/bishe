@@ -13,6 +13,7 @@ import { ElMessage, ElDialog, ElInputNumber, ElButton } from 'element-plus';
 import { Sort, Filter } from '@element-plus/icons-vue';
 // components
 import Navbar from '@/components/Navbar/index.vue';
+import Recommendation from '@/components/Recommendation/index.vue';
 // hooks
 import { usePage } from '@/hooks/shared/usePage';
 // utils
@@ -187,7 +188,8 @@ async function confirmAddToCart() {
 }
 
 function onGoodClicked(id: number) {
-  router.push({ path: '/good/detail', query: { id } });
+  const url = router.resolve({ path: '/good/detail', query: { id } });
+  window.open(url.href, '_blank');
 }
 
 function handleCurrentChange(val: number) {
@@ -258,7 +260,7 @@ onUnmounted(() => {
     <main class="main-content">
       <!-- 轮播图 -->
       <div class="banner-section">
-        <el-carousel :interval="5000" arrow="hover" height="100%" indicator-position="none">
+        <el-carousel :interval="10000" arrow="hover" height="100%" indicator-position="none">
           <el-carousel-item
             v-for="item in bannerList"
             :key="item.id"
@@ -268,6 +270,9 @@ onUnmounted(() => {
           </el-carousel-item>
         </el-carousel>
       </div>
+
+      <!-- 推荐商品 -->
+      <Recommendation />
 
       <!-- 商品列表 -->
       <div class="goods-section">
@@ -392,7 +397,7 @@ onUnmounted(() => {
   margin-bottom: 20px;
   overflow: hidden;
   width: 100%;
-  height: 400px;
+  height: 300px;
   box-sizing: border-box;
 }
 

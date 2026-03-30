@@ -7,7 +7,7 @@ export default {
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router';
 import { ref, watch } from 'vue';
-import { ShoppingCart, User, Ticket, Star } from '@element-plus/icons-vue';
+import { ShoppingCart, User, Ticket, Star, Search } from '@element-plus/icons-vue';
 
 // Props
 const props = defineProps({
@@ -28,6 +28,7 @@ const props = defineProps({
 const router = useRouter();
 const route = useRoute();
 const activeIndex = ref(route.path);
+const searchKeyword = ref('');
 
 // 监听路由变化，更新激活的菜单
 watch(
@@ -56,6 +57,26 @@ function handleRegister() {
 // 处理返回身份选择
 function goBackToRoleSelect() {
   router.push('/role-select');
+}
+
+// 处理搜索 - 新开页面
+function handleSearch() {
+  if (searchKeyword.value.trim()) {
+    const url = router.resolve({
+      path: '/search',
+      query: { keyword: searchKeyword.value.trim() },
+    });
+    window.open(url.href, '_blank');
+    // 清空搜索框
+    searchKeyword.value = '';
+  }
+}
+
+// 处理搜索框回车事件
+function handleSearchKeyup(event: KeyboardEvent) {
+  if (event.key === 'Enter') {
+    handleSearch();
+  }
 }
 </script>
 
@@ -94,6 +115,13 @@ function goBackToRoleSelect() {
         </el-menu-item>
       </el-menu>
       <div class="header-actions">
+        <div class="search-box">
+          <el-input v-model="searchKeyword" placeholder="搜索商品" size="small" clearable @keyup="handleSearchKeyup">
+            <template #prefix>
+              <el-icon class="search-icon" @click="handleSearch"><Search /></el-icon>
+            </template>
+          </el-input>
+        </div>
         <template v-if="props.showRoleSelect && props.isOmnipotent">
           <el-button type="primary" size="small" @click="handleLogin">返回登录界面</el-button>
         </template>
@@ -231,6 +259,29 @@ function goBackToRoleSelect() {
   gap: 10px !important;
   margin: 0 !important;
   padding: 0 !important;
+  align-items: center !important;
+
+  .search-box {
+    width: 200px;
+    margin-right: 40px;
+
+    :deep(.el-input__wrapper) {
+      border-radius: 4px;
+    }
+
+    :deep(.el-input__prefix) {
+      color: var(--color-primary);
+    }
+
+    .search-icon {
+      cursor: pointer;
+      color: var(--color-primary);
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
 
   :deep(.el-button) {
     font-size: 16px !important;

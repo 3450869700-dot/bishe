@@ -206,6 +206,15 @@ const routes = [
     },
   },
   {
+    path: '/search',
+    name: 'Search',
+    component: () => import('@/views/search/index.vue'),
+    meta: {
+      title: '商品搜索',
+      showWindowBar: true,
+    },
+  },
+  {
     path: '/good/detail',
     name: 'GoodDetail',
     component: () => import('@/views/good/detail.vue'),

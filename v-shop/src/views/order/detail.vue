@@ -99,12 +99,13 @@ function onOrderDelivery(orderId: number) {
 }
 
 function onGoodClicked(id: number) {
-  router.push({
+  const url = router.resolve({
     path: '/good/detail',
     query: {
       id,
     },
   });
+  window.open(url.href, '_blank');
 }
 
 function onCopy(text: string) {

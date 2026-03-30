@@ -33,14 +33,10 @@ const { hasLogin, isOmnipotent, goLogin, goPage } = usePage();
 onMounted(() => {
   console.log('Mine page mounted, hasLogin:', unref(hasLogin), 'isOmnipotent:', unref(isOmnipotent));
   if (unref(hasLogin)) {
-    if (!unref(isOmnipotent)) {
-      // 普通用户正常请求数据
-      userStore.getUserDetail();
-      getCounts();
-    } else {
-      // 万能账户可以直接使用默认数据，或者模拟数据
-      console.log('Omnipotent user, using default data');
-    }
+    // 获取用户详情
+    userStore.getUserDetail();
+    // 获取积分、优惠券等统计数据
+    getCounts();
   }
 });
 
@@ -133,7 +129,10 @@ function onEasterEgg() {
 }
 
 function getCounts() {
-  API_USER.userAmount().then((res) => {
+  // 获取当前用户ID
+  const userId = userStore.getUserInfo?.user_id || userStore.getUserInfo?.id || 1;
+
+  API_USER.userAmount({ userId }).then((res) => {
     balance.value = res.data?.balance ?? 0;
     growth.value = res.data?.growth ?? 0;
     score.value = res.data?.score ?? 0;
@@ -147,7 +146,7 @@ function getCounts() {
     });
   });
 
-  API_DISCOUNTS.discountsStatistics().then((res) => {
+  API_DISCOUNTS.discountsStatistics({ userId }).then((res) => {
     couponCanUse.value = res.data?.canUse ?? 0;
   });
 }

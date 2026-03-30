@@ -46,25 +46,29 @@ instance.interceptors.request.use((config: AxiosRequestConfig) => {
   const contentType = config.headers?.['Content-Type'] || config.headers?.get?.('Content-Type');
   console.log('Request Content-Type:', contentType, 'Method:', config.method);
 
+  // 注意：axios的method可能是大写的
+  const method = (config.method || 'GET').toLowerCase();
+  console.log('Request Method (normalized):', method);
+
   // 如果是 JSON 格式，保持数据不变（不序列化为 form-urlencoded）
   if (contentType === ContentTypeEnum.JSON || contentType?.includes?.('application/json')) {
     console.log('JSON request, keeping data as object');
     // 对于JSON格式的请求，也需要添加token
-    if (['post', 'put', 'patch'].includes(config.method as string)) {
+    if (['post', 'put', 'patch'].includes(method)) {
       config.data = joinPayloadData(config.data);
     }
 
-    if (['delete', 'get', 'head'].includes(config.method as string)) {
+    if (['delete', 'get', 'head'].includes(method)) {
       config.params = joinPayloadData(config.params);
     }
   } else {
     // 默认使用 form-urlencoded 格式
     console.log('Form request, serializing data');
-    if (['post', 'put', 'patch'].includes(config.method as string)) {
+    if (['post', 'put', 'patch'].includes(method)) {
       config.data = qs.stringify(joinPayloadData(config.data));
     }
 
-    if (['delete', 'get', 'head'].includes(config.method as string)) {
+    if (['delete', 'get', 'head'].includes(method)) {
       config.params = joinPayloadData(config.params);
     }
   }
