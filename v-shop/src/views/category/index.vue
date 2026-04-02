@@ -515,7 +515,7 @@ function handleCurrentChange(val: number) {
   position: relative;
   width: 100%;
   height: 200px;
-  background-color: #f8f8f8;
+  background-color: #ffffff;
   overflow: hidden;
 
   .goods-image {
@@ -536,7 +536,10 @@ function handleCurrentChange(val: number) {
 
 /* 商品信息 */
 .goods-info {
-  padding: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 8px;
+  padding-right: 8px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -648,7 +651,7 @@ function handleCurrentChange(val: number) {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #f8f8f8;
+  background-color: #ffffff;
   z-index: 1;
 }
 

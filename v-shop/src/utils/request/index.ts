@@ -43,7 +43,16 @@ instance.interceptors.request.use((config: AxiosRequestConfig) => {
 
   // 序列化数据
   // 注意：axios headers 可能是 AxiosHeaders 对象，需要正确获取 Content-Type
-  const contentType = config.headers?.['Content-Type'] || config.headers?.get?.('Content-Type');
+  let contentType = 'application/x-www-form-urlencoded';
+  if (config.headers) {
+    if (typeof config.headers.get === 'function') {
+      // AxiosHeaders 对象
+      contentType = config.headers.get('Content-Type') || contentType;
+    } else if (config.headers['Content-Type']) {
+      // 普通对象
+      contentType = config.headers['Content-Type'];
+    }
+  }
   console.log('Request Content-Type:', contentType, 'Method:', config.method);
 
   // 注意：axios的method可能是大写的
@@ -137,9 +146,9 @@ export function request<T = ServiceResult>(config: CustomRequestConfig): Promise
 
   return new Promise((resolve, reject) => {
     instance
-      .request<any, AxiosResponse<ServiceResult>>(config)
-      .then((res: AxiosResponse<ServiceResult>) => {
-        resolve(res as unknown as Promise<T>);
+      .request<any, any>(config)
+      .then((res: any) => {
+        resolve(res as unknown as T);
       })
       .catch((e: Error | AxiosError) => {
         reject(e);

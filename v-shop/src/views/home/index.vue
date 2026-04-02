@@ -386,7 +386,7 @@ onUnmounted(() => {
 
 .page-container {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #ffffff;
 }
 
 // 轮播图区域
@@ -546,7 +546,10 @@ onUnmounted(() => {
 
 // 商品信息
 .goods-info {
-  padding: 12px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: 8px;
+  padding-right: 8px;
   flex: 1;
   display: flex;
   flex-direction: column;

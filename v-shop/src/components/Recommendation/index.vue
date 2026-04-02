@@ -1,11 +1,8 @@
 <template>
-  <div class="recommendation">
+  <div v-if="topRecommendations.length > 0" class="recommendation">
     <h3>推荐商品</h3>
     <div class="recommendation-carousel">
-      <div v-if="topRecommendations.length === 0">
-        <p>暂无推荐商品</p>
-      </div>
-      <el-carousel v-else :interval="10000" arrow="hover" height="450px">
+      <el-carousel :interval="10000" arrow="hover" height="450px">
         <el-carousel-item v-for="(item, index) in topRecommendations" :key="item.id">
           <div class="recommendation-item">
             <div class="content-wrapper">
@@ -16,9 +13,9 @@
                     <div class="left-content">
                       <!-- 商品图片（带左右切换按钮） -->
                       <div class="product-image-container" style="position: relative; width: 100%; cursor: pointer">
-                        <van-swipe :autoplay="3000" class="swiper">
+                        <van-swipe :autoplay="3000" class="swiper" :show-indicators="false">
                           <van-swipe-item
-                            v-for="(pic, picIndex) in item.pics || [{ id: 1, pic: item.pic }]"
+                            v-for="(pic, picIndex) in getPicList(item)"
                             :key="picIndex"
                             class="swiper-item"
                           >
@@ -195,7 +192,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { recommendationApi } from '@/apis/recommendation';
 import { useUserStore } from '@/store/modules/user';
@@ -209,6 +206,43 @@ const userStore = useUserStore();
 const recommendations = ref<any[]>([]);
 const quantities = ref<Record<number, number>>({});
 const selectedSpecifications = ref<Record<number, any>>({});
+
+// 缓存相关配置
+const CACHE_KEY_PREFIX = 'recommendations_';
+const CACHE_EXPIRE_TIME = 300; // 缓存过期时间（秒）
+
+// 获取缓存数据
+function getCacheData(key: string) {
+  try {
+    const cacheItem = localStorage.getItem(key);
+    if (!cacheItem) return null;
+
+    const { data, expireTime } = JSON.parse(cacheItem);
+    // 检查缓存是否过期
+    if (Date.now() > expireTime) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    return data;
+  } catch (error) {
+    localStorage.removeItem(key);
+    return null;
+  }
+}
+
+// 设置缓存数据
+function setCacheData(key: string, data: any) {
+  try {
+    const cacheItem = {
+      data,
+      expireTime: Date.now() + CACHE_EXPIRE_TIME * 1000,
+    };
+    localStorage.setItem(key, JSON.stringify(cacheItem));
+  } catch (error) {
+    // 缓存失败不影响正常功能
+    console.log('缓存设置失败:', error);
+  }
+}
 
 // 获取前5个推荐商品
 const topRecommendations = computed(() => {
@@ -258,6 +292,15 @@ function getPicList(item: any) {
       },
     ];
   }
+  // 如果有specs并且specs中有图片，使用第一个spec的图片
+  if (item.specs && Array.isArray(item.specs) && item.specs.length > 0 && item.specs[0].pic) {
+    return [
+      {
+        id: 1,
+        pic: item.specs[0].pic,
+      },
+    ];
+  }
   // 如果没有图片数据，返回默认图片
   return [
     {
@@ -273,13 +316,22 @@ function getSpecifications(item: any) {
   if (item.specifications && Array.isArray(item.specifications)) {
     return item.specifications;
   }
+  // 如果有specs字段，使用它
+  if (item.specs && Array.isArray(item.specs)) {
+    return item.specs.map((spec: any) => ({
+      id: spec.id || item.id,
+      specification: spec.specification || '默认规格',
+      price: spec.price || item.minPrice || item.price || 0,
+      stock: spec.stock || item.stock || 100,
+    }));
+  }
   // 如果没有规格数据，返回默认规格
   return [
     {
-      id: 1,
+      id: item.id || 1,
       specification: '默认规格',
-      price: item.price,
-      stock: item.stock,
+      price: item.minPrice || item.price || 0,
+      stock: item.stock || 100,
     },
   ];
 }
@@ -295,17 +347,28 @@ function getGoodStock(item: any) {
   if (selectedSpec) {
     return selectedSpec.stock || 0;
   }
-  return item.stock || 0;
+  return item.stock || 100;
+}
+
+// 从价格字符串中提取数字
+function extractPrice(priceStr: any): number {
+  if (!priceStr) return 0;
+  if (typeof priceStr === 'number') return priceStr;
+  const match = String(priceStr).match(/(\d+\.\d+|\d+)/);
+  return match ? Number(match[1]) : 0;
 }
 
 // 获取显示价格 - 与商品详情页保持一致
 function getDisplayPrice(item: any) {
   const selectedSpec = selectedSpecifications.value[item.id];
   if (selectedSpec && selectedSpec.price !== undefined) {
-    return selectedSpec.price.toFixed(2);
+    return extractPrice(selectedSpec.price).toFixed(2);
   }
   if (item.price !== undefined) {
-    return item.price.toFixed(2);
+    return extractPrice(item.price).toFixed(2);
+  }
+  if (item.minPrice !== undefined) {
+    return extractPrice(item.minPrice).toFixed(2);
   }
   return '0.00';
 }
@@ -342,35 +405,95 @@ function addToCart(item: any) {
     });
 }
 
+// 预加载图片
+function preloadImages(images: string[]) {
+  images.forEach((imageUrl) => {
+    if (imageUrl) {
+      const img = new Image();
+      img.src = imageUrl;
+    }
+  });
+}
+
 // 获取推荐商品
 onMounted(async () => {
   try {
     console.log('开始获取推荐商品...');
     console.log('用户登录状态:', userStore.isLoggedIn);
 
-    if (userStore.isLoggedIn) {
-      console.log('获取用户推荐商品...');
-      const response = await recommendationApi.getUserRecommendations(userStore.user?.userId || 0);
-      console.log('用户推荐商品响应:', response);
-      recommendations.value = response.data || [];
-    } else {
-      console.log('获取热门商品...');
-      const response = await recommendationApi.getPopularItems();
-      console.log('热门商品响应:', response);
-      console.log('热门商品数据:', response.data);
-      console.log('热门商品数量:', response.data ? response.data.length : 0);
-      recommendations.value = response.data || [];
-    }
+    // 生成缓存键
+    const cacheKey = CACHE_KEY_PREFIX + (userStore.isLoggedIn ? `user_${userStore.user?.userId || 0}` : 'popular');
 
-    console.log('推荐商品数据:', recommendations.value);
-    console.log('推荐商品数量:', recommendations.value.length);
+    // 检查缓存
+    const cachedData = getCacheData(cacheKey);
+    if (cachedData) {
+      console.log('使用缓存的推荐商品数据');
+      recommendations.value = cachedData;
+
+      // 预加载图片
+      const imageUrls = recommendations.value.flatMap((item: any) => {
+        const urls = [];
+        if (item.pic) urls.push(item.pic);
+        if (item.pics && Array.isArray(item.pics)) {
+          item.pics.forEach((pic: any) => {
+            if (pic.pic) urls.push(pic.pic);
+          });
+        }
+        if (item.specs && Array.isArray(item.specs)) {
+          item.specs.forEach((spec: any) => {
+            if (spec.pic) urls.push(spec.pic);
+          });
+        }
+        return urls;
+      });
+      preloadImages(imageUrls);
+    } else {
+      if (userStore.isLoggedIn) {
+        console.log('获取用户推荐商品...');
+        const response = await recommendationApi.getUserRecommendations(userStore.user?.userId || 0);
+        console.log('用户推荐商品响应:', response);
+        recommendations.value = response.data || [];
+      } else {
+        console.log('获取热门商品...');
+        const response = await recommendationApi.getPopularItems();
+        console.log('热门商品响应:', response);
+        console.log('热门商品数据:', response.data);
+        console.log('热门商品数量:', response.data ? response.data.length : 0);
+        recommendations.value = response.data || [];
+      }
+
+      console.log('推荐商品数据:', recommendations.value);
+      console.log('推荐商品数量:', recommendations.value.length);
+
+      // 缓存数据
+      setCacheData(cacheKey, recommendations.value);
+
+      // 预加载图片
+      const imageUrls = recommendations.value.flatMap((item: any) => {
+        const urls = [];
+        if (item.pic) urls.push(item.pic);
+        if (item.pics && Array.isArray(item.pics)) {
+          item.pics.forEach((pic: any) => {
+            if (pic.pic) urls.push(pic.pic);
+          });
+        }
+        if (item.specs && Array.isArray(item.specs)) {
+          item.specs.forEach((spec: any) => {
+            if (spec.pic) urls.push(spec.pic);
+          });
+        }
+        return urls;
+      });
+      preloadImages(imageUrls);
+    }
 
     // 初始化数量和规格
     recommendations.value.forEach((item) => {
       quantities.value[item.id] = 1;
-      const specs = item.specifications || [
-        { id: item.id, specification: '默认规格', price: item.price, stock: item.stock },
-      ];
+      const specs = item.specifications ||
+        item.specs || [
+          { id: item.id, specification: '默认规格', price: item.price || item.minPrice, stock: item.stock || 100 },
+        ];
       if (specs.length > 0) {
         selectedSpecifications.value[item.id] = specs[0];
       }
@@ -449,10 +572,15 @@ onMounted(async () => {
   overflow: hidden;
 }
 
-.swiper-item,
+.swiper-item {
+  width: 100%;
+  height: 100%;
+}
+
 .swiper-item-img {
   width: 100%;
   height: 100%;
+  transition: opacity 0.3s ease;
 }
 
 /* 商品标题 */

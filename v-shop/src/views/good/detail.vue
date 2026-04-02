@@ -227,9 +227,10 @@ function confirmAddToCart() {
 }
 
 // 从价格字符串中提取数字
-function extractPrice(priceStr: string): number {
+function extractPrice(priceStr: any): number {
   if (!priceStr) return 0;
-  const match = priceStr.match(/(\d+\.\d+|\d+)/);
+  if (typeof priceStr === 'number') return priceStr;
+  const match = String(priceStr).match(/(\d+\.\d+|\d+)/);
   return match ? Number(match[1]) : 0;
 }
 
@@ -238,8 +239,8 @@ function handleSpecificationChange(spec: Recordable) {
   selectedSpecification.value = spec;
   // 从price字符串中提取数字作为价格
   goodPrice.value = extractPrice(spec.price) || 0;
-  goodStock.value = Number(spec.stock) || 0;
-  goodSpecificationDesc.value = spec.specificationDesc || '';
+  goodStock.value = Number(spec.stock) || 100;
+  goodSpecificationDesc.value = spec.specificationDesc || spec.specification || '';
 }
 
 // 通过规格ID快速查找规格（使用索引，O(1)时间复杂度）
@@ -727,7 +728,7 @@ function handleFavorite() {
 /* 页面容器 */
 .page-container {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #ffffff;
 
   /* 美化滚动条 */
   &::-webkit-scrollbar {

@@ -14,9 +14,41 @@ export default defineComponent({
     function propTitle(list: Recordable[]) {
       return list.map((v) => v.childName).join(',');
     }
+
+    function getGoodImage(good: any) {
+      if (good.pic) {
+        return good.pic;
+      }
+      if (good.specs && good.specs.length > 0 && good.specs[0].pic) {
+        return good.specs[0].pic;
+      }
+      return '/src/assets/images/avatar_default.png';
+    }
+
+    function getGoodPrice(good: any) {
+      if (good.price) {
+        return good.price;
+      }
+      if (good.minPrice) {
+        return good.minPrice;
+      }
+      if (good.specs && good.specs.length > 0 && good.specs[0].price) {
+        return good.specs[0].price;
+      }
+      return 0;
+    }
+
+    function handleImageError(e: Event) {
+      const target = e.target as HTMLImageElement;
+      target.src = '/src/assets/images/avatar_default.png';
+    }
+
     return {
       decimalFormat,
       propTitle,
+      getGoodImage,
+      getGoodPrice,
+      handleImageError,
     };
   },
 });
@@ -24,20 +56,31 @@ export default defineComponent({
 
 <template>
   <div class="good-card">
-    <van-image fit="contain" class="good-card-pic" :src="good.pic" />
+    <van-image
+      fit="contain"
+      class="good-card-pic"
+      :src="getGoodImage(good)"
+      lazy-load
+      placeholder="/src/assets/images/avatar_default.png"
+      :fade="true"
+      @error="handleImageError"
+    />
     <div class="good-card-content">
       <div class="good-card-title">{{ good.name }}</div>
       <div class="good-card-desc">
         <div v-if="good.propertyList && good.propertyList.length" class="good-card-prop">
           {{ propTitle(good.propertyList) }}
         </div>
+        <div v-else-if="good.specs && good.specs.length > 0" class="good-card-prop">
+          {{ good.specs[0].specification }}
+        </div>
       </div>
       <div class="good-card-bottom">
         <div class="good-card-price">
           <span class="good-card-price-symbol">¥</span>
-          <span class="good-card-price-integer">{{ decimalFormat(good.price) }}</span>
+          <span class="good-card-price-integer">{{ decimalFormat(getGoodPrice(good)) }}</span>
         </div>
-        <div class="good-card-number">x{{ good.number }}</div>
+        <div class="good-card-number">x{{ good.number || 1 }}</div>
       </div>
     </div>
   </div>
