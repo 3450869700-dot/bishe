@@ -49,8 +49,12 @@ public class ProductService {
     }
 
     public List<Product> getAllProducts() {
-        // 清除缓存，强制从数据库中查询最新的数据
-        CACHE.remove(ALL_PRODUCTS_KEY);
+        // 首先检查缓存
+        List<Product> cachedProducts = getCachedData(ALL_PRODUCTS_KEY);
+        if (cachedProducts != null) {
+            System.out.println("=== ProductService: Using cached products ===");
+            return cachedProducts;
+        }
         
         System.out.println("=== ProductService: Using native SQL to get all products ===");
         
@@ -64,15 +68,8 @@ public class ProductService {
             Object[] rawProduct = rawProducts.get(i);
             Product product = new Product();
 
-            // 添加调试信息，打印rawProduct数组的长度和各个元素的值
-            System.out.println("=== Product " + (i+1) + " rawProduct length: " + rawProduct.length);
-            for (int j = 0; j < rawProduct.length; j++) {
-                System.out.println("=== Product " + (i+1) + " rawProduct[" + j + "]: " + (rawProduct[j] != null ? rawProduct[j].toString() : "null"));
-            }
-
             // 检查字段数量是否足够
             if (rawProduct.length < 13) {
-                System.out.println("=== Product " + (i+1) + " has insufficient fields (" + rawProduct.length + "), skipping ===");
                 continue;
             }
             
@@ -85,7 +82,6 @@ public class ProductService {
             
             // 检查商品名称是否为空，如果为空则跳过该商品
             if (productName.isEmpty()) {
-                System.out.println("=== Product " + (i+1) + " has empty name, skipping ===");
                 continue;
             }
 
@@ -94,7 +90,6 @@ public class ProductService {
             try {
                 realProductCode = rawProduct[12] != null ? Long.parseLong(rawProduct[12].toString()) : (long) i;
             } catch (NumberFormatException e) {
-                System.out.println("=== Product " + (i+1) + " invalid product_code: " + rawProduct[12] + ", using index ===");
                 realProductCode = (long) i;
             }
             product.setProductCode(realProductCode);
@@ -120,31 +115,11 @@ public class ProductService {
             // heat 在索引8
             product.setHeat(rawProduct[8] != null ? rawProduct[8].toString() : "0");
 
-            // 打印最终映射结果
-            System.out.println("=== Product " + (i+1) + " Final Mapping ===");
-            System.out.println("=== Name: " + product.getName());
-            System.out.println("=== Spec: " + product.getSpecName());
-            System.out.println("=== Price: " + product.getPrice());
-            System.out.println("=== Variety: " + product.getVariety());
-            System.out.println("=== Grade: " + product.getGrade());
-            System.out.println("=== Shop: " + product.getShop());
-            System.out.println("=== Address: " + product.getAddress());
-            System.out.println("=== ImageUrl: " + product.getImageUrl());
-
             products.add(product);
         }
 
         // 缓存商品数据
         setCachedData(ALL_PRODUCTS_KEY, products);
-
-        // 调试：打印第一条记录
-        if (!products.isEmpty()) {
-            Product first = products.get(0);
-            System.out.println("=== DEBUG First Product ===");
-            System.out.println("name: " + first.getName());
-            System.out.println("price: " + first.getPrice());
-            System.out.println("imageUrl: " + first.getImageUrl());
-        }
 
         return products;
     }

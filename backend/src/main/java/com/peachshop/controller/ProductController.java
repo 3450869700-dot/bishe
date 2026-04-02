@@ -93,7 +93,8 @@ public class ProductController {
         // 提取完整省份名称作为分类，使用Set去重
         Set<String> addressPrefixes = new HashSet<>();
 
-        for (Product product : allProducts) {
+        // 优化：使用并行流处理商品地址，提高性能
+        allProducts.parallelStream().forEach(product -> {
             String address = product.getAddress();
             String province;
             if (address != null && !address.isEmpty()) {
@@ -116,7 +117,7 @@ public class ProductController {
                 province = "其余地址";
             }
             addressPrefixes.add(province);
-        }
+        });
 
         // 构建分类列表，不包含"所有商品"分类
         List<Map<String, Object>> categories = new ArrayList<>();
@@ -387,6 +388,16 @@ public class ProductController {
      */
     @GetMapping("/products/{id}")
     public ResponseEntity<Map<String, Object>> getProductById(@PathVariable Long id) {
+        // 生成缓存键
+        String cacheKey = "product_detail_" + id;
+        
+        // 首先检查缓存
+        Map<String, Object> cachedResponse = getCachedData(cacheKey);
+        if (cachedResponse != null) {
+            System.out.println("=== ProductController: Using cached product detail for ID: " + id);
+            return ResponseEntity.ok(cachedResponse);
+        }
+        
         Optional<Product> productOpt = productService.getProductById(id);
 
         Map<String, Object> response = new HashMap<>();
@@ -406,6 +417,12 @@ public class ProductController {
                 pic.put("id", "1"); // 使用固定ID，因为数据库中只有一个图片URL
                 pic.put("pic", product.getImageUrl());
                 pics.add(pic);
+            } else {
+                // 添加默认图片
+                Map<String, String> pic = new HashMap<>();
+                pic.put("id", "1");
+                pic.put("pic", "https://via.placeholder.com/400x400?text=No+Image");
+                pics.add(pic);
             }
             productDetail.put("pics", pics);
             
@@ -413,21 +430,23 @@ public class ProductController {
             Map<String, Object> basicInfo = new HashMap<>();
             basicInfo.put("id", product.getProductCode());
             basicInfo.put("name", product.getName());
-            basicInfo.put("pic", product.getImageUrl()); // 添加商品图片URL
+            basicInfo.put("pic", product.getImageUrl() != null && !product.getImageUrl().isEmpty() ? product.getImageUrl() : "https://via.placeholder.com/400x400?text=No+Image"); // 添加商品图片URL
             // 找到最低价格
             String minPrice = allProducts.stream()
                 .map(Product::getPrice)
                 .filter(price -> price != null && !price.isEmpty())
                 .min(Comparator.comparingDouble(this::extractPrice))
-                .orElse(product.getPrice());
+                .orElse(product.getPrice() != null ? product.getPrice() : "0");
             basicInfo.put("minPrice", minPrice);
-            basicInfo.put("originalPrice", product.getPrice()); // 使用相同价格作为原价
+            basicInfo.put("originalPrice", product.getPrice() != null ? product.getPrice() : "0"); // 使用相同价格作为原价
             basicInfo.put("stores", 100); // 使用固定库存
             basicInfo.put("status", 0); // 0表示商品正常
             basicInfo.put("characteristic", product.getVariety() != null ? product.getVariety() : ""); // 使用品种作为特性
-            basicInfo.put("shop", product.getShop()); // 添加店铺信息
-            basicInfo.put("grade", product.getGrade()); // 添加等级信息
-            basicInfo.put("heat", product.getHeat()); // 添加热度信息
+            basicInfo.put("shop", product.getShop() != null ? product.getShop() : ""); // 添加店铺信息
+            basicInfo.put("grade", product.getGrade() != null ? product.getGrade() : ""); // 添加等级信息
+            basicInfo.put("heat", product.getHeat() != null ? product.getHeat() : 0); // 添加热度信息
+            basicInfo.put("origin", product.getAddress() != null ? product.getAddress() : ""); // 添加产地信息
+            basicInfo.put("variety", product.getVariety() != null ? product.getVariety() : ""); // 添加品种信息
             productDetail.put("basicInfo", basicInfo);
             
             // 构建物流信息
@@ -492,11 +511,11 @@ public class ProductController {
                 spec.put("id", p.getProductCode());
                 spec.put("specification", p.getSpecName() != null && !p.getSpecName().isEmpty() ? p.getSpecName() : "默认规格");
                 spec.put("specificationDesc", p.getWeight() != null ? "重量：" + p.getWeight() : "");
-                spec.put("price", p.getPrice());
+                spec.put("price", p.getPrice() != null ? p.getPrice() : "0");
                 spec.put("stock", 100); // 使用固定库存
                 spec.put("weight", p.getWeight() != null ? p.getWeight() : "");
-                spec.put("grade", p.getGrade());
-                spec.put("shop", p.getShop());
+                spec.put("grade", p.getGrade() != null ? p.getGrade() : "");
+                spec.put("shop", p.getShop() != null ? p.getShop() : "");
                 specifications.add(spec);
             }
             productDetail.put("specifications", specifications);
@@ -504,6 +523,9 @@ public class ProductController {
             response.put("code", 0);
             response.put("msg", "success");
             response.put("data", productDetail);
+            
+            // 缓存响应
+            setCachedData(cacheKey, response);
         } else {
             response.put("code", 404);
             response.put("msg", "Product not found");

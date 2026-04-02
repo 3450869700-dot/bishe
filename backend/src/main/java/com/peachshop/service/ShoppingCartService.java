@@ -189,8 +189,7 @@ public class ShoppingCartService {
         System.out.println("=== ShoppingCartService: Getting shopping cart item for user " + userId + ", product code " + productCode + " ===");
 
         // 使用原生SQL查询获取指定用户和商品的购物车数据
-        // 将Long转换为String传递给Repository
-        Object[] rawItem = shoppingCartRepository.findByUserIdAndProductCodeForCheck(userId, productCode != null ? productCode.toString() : null);
+        Object[] rawItem = shoppingCartRepository.findByUserIdAndProductCodeForCheck(userId, productCode);
 
         if (rawItem != null && rawItem.length >= 8) {
             ShoppingCart item = new ShoppingCart();

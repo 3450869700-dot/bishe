@@ -34,7 +34,7 @@ public interface ShoppingCartRepository extends JpaRepository<ShoppingCart, Long
      * 注意：由于每个规格是独立的商品记录，使用product_code即可区分不同规格
      */
     @Query(value = "SELECT * FROM shopping_cart WHERE user_id = ?1 AND product_code = ?2", nativeQuery = true)
-    Object[] findByUserIdAndProductCodeForCheck(Long userId, String productCode);
+    Object[] findByUserIdAndProductCodeForCheck(Long userId, Long productCode);
     
     /**
      * 获取购物车项目总数
