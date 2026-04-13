@@ -107,76 +107,78 @@ function onSubmit() {
 
 <template>
   <div class="container">
-    <div class="back-btn" @click="goBack"><van-icon name="arrow-left" /> 返回选择身份</div>
-    <div class="main">
-      <div class="h2">{{ loginProvider.h2 }}</div>
-      <div class="safe-tips">为了你的帐号安全，请用手机号登录</div>
-      <form class="form">
-        <div class="form-item">
-          <div class="form-item-country">中国 +86</div>
-          <van-field
-            v-model="mobile"
-            class="form-field"
-            :border="false"
-            type="tel"
-            placeholder="请输入手机号"
-            autocomplete="username"
-            clearable
-          />
-          <input type="text" hidden autocomplete="username" />
-        </div>
-        <div v-if="loginType === 'system'" class="form-item">
-          <PwdField
-            v-model="pwd"
-            class="form-field"
-            :border="false"
-            placeholder="请输入密码"
-            autocomplete="current-password"
-            clearable
-          />
-        </div>
-        <div v-if="loginType === 'sms'" class="form-item">
-          <CaptchaCodeField
-            v-model="smsCode"
-            :mobile="mobile"
-            class="form-field"
-            :border="false"
-            type="number"
-            maxlength="4"
-            placeholder="请输入4位验证码"
-            clearable
-          />
-        </div>
-        <van-button
-          class="form-submit"
-          block
-          :disabled="!submitted"
-          :loading="submitLoading"
-          loading-text="登录中..."
-          type="primary"
-          @click="onSubmit"
-          >登录</van-button
-        >
-      </form>
-      <div class="check-type">
-        <div class="check-type-hd">
-          <span class="check-type-btn" @click="onLoginTypeChange">{{ checkTypeText }}</span>
-        </div>
-        <div class="check-type-bd">
-          <template v-if="loginType === 'system'">
-            <span class="check-type-btn" @click="goPage('/resetPwd')">忘记密码</span>
-            <span class="check-type-separate">|</span>
-          </template>
-          <span class="check-type-btn" @click="goPage('register')">免费注册</span>
+    <div class="login-card">
+      <div class="back-btn" @click="goBack"><van-icon name="arrow-left" /> 返回选择身份</div>
+      <div class="main">
+        <div class="h2">{{ loginProvider.h2 }}</div>
+        <div class="safe-tips">为了你的帐号安全，请用手机号登录</div>
+        <form class="form">
+          <div class="form-item">
+            <div class="form-item-country">中国 +86</div>
+            <van-field
+              v-model="mobile"
+              class="form-field"
+              :border="false"
+              type="tel"
+              placeholder="请输入手机号"
+              autocomplete="username"
+              clearable
+            />
+            <input type="text" hidden autocomplete="username" />
+          </div>
+          <div v-if="loginType === 'system'" class="form-item">
+            <PwdField
+              v-model="pwd"
+              class="form-field"
+              :border="false"
+              placeholder="请输入密码"
+              autocomplete="current-password"
+              clearable
+            />
+          </div>
+          <div v-if="loginType === 'sms'" class="form-item">
+            <CaptchaCodeField
+              v-model="smsCode"
+              :mobile="mobile"
+              class="form-field"
+              :border="false"
+              type="number"
+              maxlength="4"
+              placeholder="请输入4位验证码"
+              clearable
+            />
+          </div>
+          <van-button
+            class="form-submit"
+            block
+            :disabled="!submitted"
+            :loading="submitLoading"
+            loading-text="登录中..."
+            type="primary"
+            @click="onSubmit"
+            >登录</van-button
+          >
+        </form>
+        <div class="check-type">
+          <div class="check-type-hd">
+            <span class="check-type-btn" @click="onLoginTypeChange">{{ checkTypeText }}</span>
+          </div>
+          <div class="check-type-bd">
+            <template v-if="loginType === 'system'">
+              <span class="check-type-btn" @click="goPage('/resetPwd')">忘记密码</span>
+              <span class="check-type-separate">|</span>
+            </template>
+            <span class="check-type-btn" @click="goPage('register')">免费注册</span>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="footer">
-      <div class="footer-agreement">
-        <van-checkbox v-model="agree" icon-size="16px" />
-        <span> 阅读并同意</span><a href="javascript:void(0);">《用户协议》</a>和<a href="javascript:void(0);"
-          >《隐私政策》</a
-        >
+      <div class="footer">
+        <div class="footer-agreement">
+          <van-checkbox v-model="agree" icon-size="16px" />
+          <span> 阅读并同意</span><a href="javascript:void(0);">《用户协议》</a>和<a href="javascript:void(0);"
+            >《隐私政策》</a
+          >
+        </div>
       </div>
     </div>
   </div>
@@ -186,21 +188,4 @@ function onSubmit() {
 @import '@/styles/mixins/login.less';
 
 .login();
-
-.back-btn {
-  display: flex;
-  align-items: center;
-  padding: 16px 20px 0;
-  color: #666;
-  font-size: 14px;
-  cursor: pointer;
-
-  .van-icon {
-    margin-right: 4px;
-  }
-
-  &:hover {
-    color: var(--color-primary);
-  }
-}
 </style>
