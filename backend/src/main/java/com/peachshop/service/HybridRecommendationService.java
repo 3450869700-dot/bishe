@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,6 +21,8 @@ import java.util.stream.Collectors;
  * 
  * 当前版本：仅实现算法框架，实际仍使用随机推荐
  * 未来版本：启用加权计算，融合多种推荐结果
+ * 
+ * 更新说明：热度推荐改用逻辑回归计算（已注释）
  */
 @Service
 public class HybridRecommendationService {
@@ -46,7 +50,7 @@ public class HybridRecommendationService {
         // 当前版本：使用随机推荐
         return getRandomRecommendations();
         
-        // 未来版本：启用混合推荐
+        // 未来版本：启用混合推荐（使用逻辑回归计算热度）
         // return getHybridRecommendations(userId);
     }
     
@@ -58,7 +62,7 @@ public class HybridRecommendationService {
         // 当前版本：使用随机推荐
         return getRandomRecommendations();
         
-        // 未来版本：启用热度推荐
+        // 未来版本：启用热度推荐（使用逻辑回归）
         // return getPopularityBasedRecommendations();
     }
     
@@ -94,23 +98,38 @@ public class HybridRecommendationService {
         }
     }
     
-    // ==================== 混合推荐算法框架（未来启用） ====================
+    // ==================== 混合推荐算法框架（未来启用，含逻辑回归热度计算） ====================
     
-    /**
-     * 混合推荐算法（框架已实现，未来启用）
-     * 
-     * 算法流程：
-     * 1. 分别获取三种算法的推荐结果
-     * 2. 计算每个商品的加权得分
-     * 3. 按得分排序，返回Top N
+    /*
+     * 以下代码已注释，未来启用混合推荐时取消注释
+     * 主要更新：热度推荐使用逻辑回归替代简单归一化
      */
+    
+    /*
+    // ==================== 逻辑回归热度推荐配置 ====================
+    
+    // 逻辑回归模型参数（热度推荐）
+    private Map<String, Double> lrWeights = new HashMap<>();
+    private double lrBias = 0.0;
+    
+    // 特征统计（用于标准化）
+    private Map<String, Double> featureMeans = new HashMap<>();
+    private Map<String, Double> featureStdDevs = new HashMap<>();
+    
+    // 训练参数
+    private static final double LR_LEARNING_RATE = 0.01;
+    private static final int LR_MAX_ITERATIONS = 500;
+    private static final double LR_CONVERGENCE_THRESHOLD = 1e-6;
+    
+    // ==================== 混合推荐主入口 ====================
+    
     private Mono<List<Map<String, Object>>> getHybridRecommendations(int userId) {
         try {
             // 获取所有商品
             List<com.peachshop.model.Product> allProducts = productService.getProducts();
             
-            // 1. 热度推荐结果
-            List<ScoredProduct> popularityScores = calculatePopularityScores(allProducts);
+            // 1. 热度推荐结果（使用逻辑回归计算）
+            List<ScoredProduct> popularityScores = calculatePopularityScoresWithLR(allProducts);
             
             // 2. 协同过滤结果（需要用户行为数据）
             List<ScoredProduct> collaborativeScores = calculateCollaborativeScores(userId, allProducts);
@@ -140,51 +159,250 @@ public class HybridRecommendationService {
         }
     }
     
-    /**
-     * 算法1：热度推荐（Popularity-based）
-     * 
-     * 基于商品的heat字段（热度值）计算得分
-     * 热度越高，得分越高
-     */
-    private List<ScoredProduct> calculatePopularityScores(List<com.peachshop.model.Product> products) {
+    // ==================== 算法1：基于逻辑回归的热度推荐 ====================
+    
+    private List<ScoredProduct> calculatePopularityScoresWithLR(List<com.peachshop.model.Product> products) {
+        // 初始化模型（如果未训练）
+        if (lrWeights.isEmpty()) {
+            trainLogisticRegressionModel(products);
+        }
+        
         List<ScoredProduct> scores = new ArrayList<>();
         
-        // 找出最大热度值用于归一化
-        int maxHeat = products.stream()
-            .mapToInt(p -> {
-                try {
-                    return Integer.parseInt(p.getHeat());
-                } catch (Exception e) {
-                    return 0;
-                }
-            })
-            .max()
-            .orElse(1);
-        
         for (com.peachshop.model.Product product : products) {
-            try {
-                int heat = Integer.parseInt(product.getHeat());
-                // 归一化得分：heat / maxHeat
-                double score = maxHeat > 0 ? (double) heat / maxHeat : 0;
-                scores.add(new ScoredProduct(product, score, "popularity"));
-            } catch (Exception e) {
-                scores.add(new ScoredProduct(product, 0, "popularity"));
-            }
+            // 提取特征
+            HeatFeatures features = extractHeatFeatures(product);
+            
+            // 逻辑回归预测热度得分
+            double heatScore = predictHeatScoreWithLR(features);
+            
+            scores.add(new ScoredProduct(product, heatScore, "popularity_lr"));
         }
         
         return scores;
     }
     
-    /**
-     * 算法2：协同过滤（Collaborative Filtering）
-     * 
-     * 基于用户行为数据的协同过滤推荐
-     * 需要：用户-商品交互数据（浏览、购买、收藏等）
-     * 
-     * 实现思路：
-     * 1. 找到与当前用户相似的其他用户
-     * 2. 推荐相似用户喜欢的商品
-     */
+    private void trainLogisticRegressionModel(List<com.peachshop.model.Product> products) {
+        // 准备训练数据
+        List<HeatTrainingData> trainingData = new ArrayList<>();
+        
+        for (com.peachshop.model.Product product : products) {
+            HeatFeatures features = extractHeatFeatures(product);
+            double label = isHotProduct(features) ? 1.0 : 0.0;
+            trainingData.add(new HeatTrainingData(features, label));
+        }
+        
+        if (trainingData.size() < 50) {
+            // 数据不足，使用默认权重
+            initializeDefaultLRWeights();
+            return;
+        }
+        
+        // 计算特征统计
+        calculateFeatureStatistics(trainingData);
+        
+        // 初始化权重
+        initializeLRWeights();
+        
+        // 梯度下降训练
+        lrGradientDescent(trainingData);
+    }
+    
+    private HeatFeatures extractHeatFeatures(com.peachshop.model.Product product) {
+        HeatFeatures features = new HeatFeatures();
+        
+        // 从heat字段解析热度值
+        try {
+            features.heatValue = Integer.parseInt(product.getHeat());
+        } catch (Exception e) {
+            features.heatValue = 0;
+        }
+        
+        // 时间特征（上架天数）
+        features.daysSincePublished = ChronoUnit.DAYS.between(
+            product.getCreatedAt() != null ? product.getCreatedAt() : LocalDateTime.now().minusDays(30),
+            LocalDateTime.now()
+        );
+        
+        // 质量特征
+        features.rating = product.getRating() != null ? product.getRating() : 4.0;
+        
+        // 价格特征（提取数字）
+        features.priceValue = extractPrice(product.getPrice());
+        
+        // 对数特征（处理长尾）
+        features.logHeatValue = Math.log(features.heatValue + 1);
+        
+        // 时间衰减特征
+        features.timeDecay = Math.exp(-0.01 * features.daysSincePublished);
+        
+        return features;
+    }
+    
+    private boolean isHotProduct(HeatFeatures features) {
+        // 定义热门商品标准
+        return features.heatValue > 500 && features.rating > 4.0;
+    }
+    
+    private double predictHeatScoreWithLR(HeatFeatures features) {
+        double z = lrBias;
+        
+        z += lrWeights.getOrDefault("heatValue", 0.0) * normalize(features.heatValue, "heatValue");
+        z += lrWeights.getOrDefault("daysSincePublished", 0.0) * normalize(features.daysSincePublished, "daysSincePublished");
+        z += lrWeights.getOrDefault("rating", 0.0) * normalize(features.rating, "rating");
+        z += lrWeights.getOrDefault("priceValue", 0.0) * normalize(features.priceValue, "priceValue");
+        z += lrWeights.getOrDefault("logHeatValue", 0.0) * normalize(features.logHeatValue, "logHeatValue");
+        z += lrWeights.getOrDefault("timeDecay", 0.0) * normalize(features.timeDecay, "timeDecay");
+        
+        return sigmoid(z);
+    }
+    
+    private void lrGradientDescent(List<HeatTrainingData> data) {
+        int n = data.size();
+        double prevLoss = Double.MAX_VALUE;
+        
+        String[] featureNames = {"heatValue", "daysSincePublished", "rating", "priceValue", "logHeatValue", "timeDecay"};
+        
+        for (int iter = 0; iter < LR_MAX_ITERATIONS; iter++) {
+            Map<String, Double> gradients = new HashMap<>();
+            double biasGradient = 0.0;
+            double totalLoss = 0.0;
+            
+            for (HeatTrainingData sample : data) {
+                double prediction = predictRaw(sample.features);
+                double error = prediction - sample.label;
+                totalLoss += calculateLRLoss(sample.label, sigmoid(prediction));
+                
+                // 计算各特征梯度
+                for (String feature : featureNames) {
+                    double value = getFeatureValue(sample.features, feature);
+                    double normalizedValue = normalize(value, feature);
+                    gradients.merge(feature, error * normalizedValue, Double::sum);
+                }
+                biasGradient += error;
+            }
+            
+            // 更新权重
+            for (String feature : featureNames) {
+                if (gradients.containsKey(feature)) {
+                    double gradient = gradients.get(feature) / n;
+                    double newWeight = lrWeights.get(feature) - LR_LEARNING_RATE * gradient;
+                    lrWeights.put(feature, newWeight);
+                }
+            }
+            lrBias -= LR_LEARNING_RATE * (biasGradient / n);
+            
+            // 检查收敛
+            double avgLoss = totalLoss / n;
+            if (Math.abs(prevLoss - avgLoss) < LR_CONVERGENCE_THRESHOLD) {
+                break;
+            }
+            prevLoss = avgLoss;
+        }
+    }
+    
+    private double predictRaw(HeatFeatures features) {
+        double z = lrBias;
+        String[] featureNames = {"heatValue", "daysSincePublished", "rating", "priceValue", "logHeatValue", "timeDecay"};
+        
+        for (String feature : featureNames) {
+            double value = getFeatureValue(features, feature);
+            double weight = lrWeights.getOrDefault(feature, 0.0);
+            z += weight * normalize(value, feature);
+        }
+        
+        return z;
+    }
+    
+    private double getFeatureValue(HeatFeatures features, String featureName) {
+        return switch (featureName) {
+            case "heatValue" -> features.heatValue;
+            case "daysSincePublished" -> features.daysSincePublished;
+            case "rating" -> features.rating;
+            case "priceValue" -> features.priceValue;
+            case "logHeatValue" -> features.logHeatValue;
+            case "timeDecay" -> features.timeDecay;
+            default -> 0.0;
+        };
+    }
+    
+    private void calculateFeatureStatistics(List<HeatTrainingData> data) {
+        String[] featureNames = {"heatValue", "daysSincePublished", "rating", "priceValue", "logHeatValue", "timeDecay"};
+        
+        for (String feature : featureNames) {
+            List<Double> values = data.stream()
+                .map(d -> getFeatureValue(d.features, feature))
+                .collect(Collectors.toList());
+            
+            double mean = values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+            double variance = values.stream()
+                .mapToDouble(v -> Math.pow(v - mean, 2))
+                .average().orElse(0.0);
+            double stdDev = Math.sqrt(variance);
+            
+            featureMeans.put(feature, mean);
+            featureStdDevs.put(feature, stdDev > 0 ? stdDev : 1.0);
+        }
+    }
+    
+    private void initializeLRWeights() {
+        lrWeights.clear();
+        String[] featureNames = {"heatValue", "daysSincePublished", "rating", "priceValue", "logHeatValue", "timeDecay"};
+        for (String feature : featureNames) {
+            lrWeights.put(feature, 0.0);
+        }
+        lrBias = 0.0;
+    }
+    
+    private void initializeDefaultLRWeights() {
+        // 默认权重（基于经验）
+        lrWeights.put("heatValue", 2.0);
+        lrWeights.put("daysSincePublished", -0.5);
+        lrWeights.put("rating", 1.0);
+        lrWeights.put("priceValue", 0.2);
+        lrWeights.put("logHeatValue", 0.5);
+        lrWeights.put("timeDecay", 1.5);
+        lrBias = -1.0;
+    }
+    
+    private double normalize(double value, String feature) {
+        double mean = featureMeans.getOrDefault(feature, 0.0);
+        double stdDev = featureStdDevs.getOrDefault(feature, 1.0);
+        return (value - mean) / stdDev;
+    }
+    
+    private double sigmoid(double z) {
+        return 1.0 / (1.0 + Math.exp(-z));
+    }
+    
+    private double calculateLRLoss(double label, double prediction) {
+        prediction = Math.max(1e-15, Math.min(1 - 1e-15, prediction));
+        return -(label * Math.log(prediction) + (1 - label) * Math.log(1 - prediction));
+    }
+    
+    // ==================== 热度特征类 ====================
+    
+    private static class HeatFeatures {
+        double heatValue;           // 热度值
+        double daysSincePublished;  // 上架天数
+        double rating;              // 评分
+        double priceValue;          // 价格
+        double logHeatValue;        // 热度对数
+        double timeDecay;           // 时间衰减因子
+    }
+    
+    private static class HeatTrainingData {
+        HeatFeatures features;
+        double label;
+        
+        HeatTrainingData(HeatFeatures features, double label) {
+            this.features = features;
+            this.label = label;
+        }
+    }
+    
+    // ==================== 算法2：协同过滤（框架） ====================
+    
     private List<ScoredProduct> calculateCollaborativeScores(
             int userId, 
             List<com.peachshop.model.Product> products) {
@@ -192,12 +410,11 @@ public class HybridRecommendationService {
         List<ScoredProduct> scores = new ArrayList<>();
         
         // TODO: 需要用户行为数据支持
-        // 1. 获取当前用户的历史行为（浏览、购买、收藏）
-        // 2. 计算用户相似度（余弦相似度、皮尔逊相关系数等）
+        // 1. 获取当前用户的历史行为
+        // 2. 计算用户相似度（余弦相似度）
         // 3. 找到K个最相似的用户
-        // 4. 推荐这些用户喜欢但当前用户未交互的商品
+        // 4. 推荐这些用户喜欢的商品
         
-        // 当前：返回默认得分（需要数据支持后才能实现）
         for (com.peachshop.model.Product product : products) {
             scores.add(new ScoredProduct(product, 0.5, "collaborative"));
         }
@@ -205,18 +422,8 @@ public class HybridRecommendationService {
         return scores;
     }
     
-    /**
-     * 算法3：内容推荐（Content-based）
-     * 
-     * 基于商品属性特征的推荐
-     * 分析用户历史喜欢的商品特征，推荐相似特征的商品
-     * 
-     * 考虑的特征：
-     * - 商品品种（variety）
-     * - 商品等级（grade）
-     * - 价格区间
-     * - 产地（address）
-     */
+    // ==================== 算法3：内容推荐（框架） ====================
+    
     private List<ScoredProduct> calculateContentScores(
             int userId, 
             List<com.peachshop.model.Product> products) {
@@ -225,11 +432,9 @@ public class HybridRecommendationService {
         
         // TODO: 需要用户历史偏好数据
         // 1. 获取用户历史喜欢的商品
-        // 2. 提取这些商品的特征（品种、等级、价格区间、产地）
-        // 3. 计算每个候选商品与用户偏好的相似度
-        // 4. 返回相似度得分
+        // 2. 提取商品特征（品种、等级、价格、产地）
+        // 3. 计算候选商品与用户偏好的相似度
         
-        // 当前：返回默认得分（需要数据支持后才能实现）
         for (com.peachshop.model.Product product : products) {
             scores.add(new ScoredProduct(product, 0.5, "content"));
         }
@@ -237,11 +442,8 @@ public class HybridRecommendationService {
         return scores;
     }
     
-    /**
-     * 加权融合三种算法的得分
-     * 
-     * 公式：final_score = w1 * popularity + w2 * collaborative + w3 * content
-     */
+    // ==================== 加权融合 ====================
+    
     private List<ScoredProduct> mergeScores(
             List<ScoredProduct> popularityScores,
             List<ScoredProduct> collaborativeScores,
@@ -282,6 +484,7 @@ public class HybridRecommendationService {
         
         return new ArrayList<>(mergedMap.values());
     }
+    */
     
     // ==================== 工具方法 ====================
     
@@ -380,32 +583,5 @@ public class HybridRecommendationService {
             this.score = score;
             this.algorithmType = algorithmType;
         }
-    }
-    
-    // ==================== 数据模型（未来需要实现） ====================
-    
-    /**
-     * 用户行为数据模型
-     * 用于协同过滤算法
-     */
-    public static class UserBehavior {
-        int userId;
-        Long productId;
-        String behaviorType; // VIEW, PURCHASE, FAVORITE, CART
-        double weight;       // 行为权重
-        long timestamp;
-    }
-    
-    /**
-     * 用户偏好特征模型
-     * 用于内容推荐算法
-     */
-    public static class UserPreference {
-        int userId;
-        Map<String, Double> varietyPreferences;  // 品种偏好
-        Map<String, Double> gradePreferences;    // 等级偏好
-        double preferredPriceMin;                // 偏好价格区间
-        double preferredPriceMax;
-        Map<String, Double> addressPreferences;  // 产地偏好
     }
 }
