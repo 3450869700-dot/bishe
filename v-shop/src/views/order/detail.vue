@@ -66,7 +66,14 @@ function onOrderDelete(orderId: number) {
 }
 
 function onOrderPay(_orderId: number) {
-  showToast({ message: '未开放：收银台', duration: 1500 });
+  // 跳转到模拟支付页面
+  router.push({
+    path: '/order/pay',
+    query: {
+      orderNumber: orderInfo.value.orderNumber,
+      amountReal: orderInfo.value.amountReal,
+    },
+  });
 }
 
 function onConcatService() {

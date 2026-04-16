@@ -52,6 +52,10 @@ function onOrderDelete(item: Recordable, index: number) {
       console.error(err);
     });
 }
+
+function goToCart() {
+  router.push('/cart');
+}
 </script>
 
 <template>
@@ -102,6 +106,7 @@ function onOrderDelete(item: Recordable, index: number) {
         <van-button icon="service" class="list-item-action-btn" round @click.stop="onConcatService(item)">
           联系客服
         </van-button>
+        <van-button class="list-item-action-btn" round plain @click.stop="goToCart"> 返回购物车 </van-button>
       </template>
       <template v-if="item.status === 2">
         <van-button class="list-item-action-btn" round @click.stop="onOrderClicked(item)">确认收货</van-button>

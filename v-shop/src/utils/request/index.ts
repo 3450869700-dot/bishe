@@ -21,7 +21,7 @@ const instance: AxiosInstance = axios.create({
   timeout: 5 * 1000,
   // 使用 form-urlencoded 格式，即伪表单
   headers: {
-    'Content-Type': ContentTypeEnum.FORM_URLENCODED,
+    'Content-Type': 'application/x-www-form-urlencoded',
   },
 });
 

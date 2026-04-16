@@ -107,6 +107,15 @@ const routes = [
     },
   },
   {
+    path: '/order/pay',
+    name: 'OrderPay',
+    component: () => import('@/views/order/pay.vue'),
+    meta: {
+      title: '模拟支付',
+      needLogin: true,
+    },
+  },
+  {
     path: '/refund',
     name: 'refund',
     component: () => import('@/views/refund/index.vue'),

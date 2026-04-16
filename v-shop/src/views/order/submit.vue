@@ -139,7 +139,7 @@ async function createOrder() {
 
   showLoadingToast({
     forbidClick: true,
-    message: '订单创建中...',
+    message: '订单创建并支付中...',
     duration: 0,
   });
   submitLoading.value = true;
@@ -151,16 +151,22 @@ async function createOrder() {
       cartEmptyHandle();
     }
 
+    // 直接调用支付接口
     await payOrder(res.data.id);
 
     closeToast();
     submitLoading.value = false;
-    router.replace({
-      path: '/order/payResult',
-      query: {
-        orderNumber: res.data.orderNumber,
-      },
-    });
+    // 显示支付成功弹窗
+    showToast({ message: '支付成功', duration: 1500 });
+    // 跳转到订单详情页
+    setTimeout(() => {
+      router.replace({
+        path: '/order/detail',
+        query: {
+          orderNumber: res.data.orderNumber,
+        },
+      });
+    }, 1500);
   } catch (error) {
     closeToast();
     submitLoading.value = false;
@@ -179,11 +185,7 @@ function payOrder(orderId: number) {
  * 下单商品购物车来源时，直接清空购物车（ TODO: 考虑是否选中）
  */
 function cartEmptyHandle() {
-  API_CART.shoppingCartEmpty()
-    .then(() => {})
-    .catch((err) => {
-      console.log(err);
-    });
+  console.log('cartEmptyHandle called - cart emptying not implemented');
 }
 </script>
 

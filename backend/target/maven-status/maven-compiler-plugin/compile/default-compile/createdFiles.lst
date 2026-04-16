@@ -4,7 +4,6 @@ com\peachshop\repository\UserRepository.class
 com\peachshop\model\Coupon.class
 com\peachshop\controller\DatabaseController.class
 com\peachshop\repository\UserBehaviorRepository.class
-com\peachshop\service\HybridRecommendationService$UserPreference.class
 com\peachshop\service\UserService.class
 com\peachshop\model\UserCoupon.class
 com\peachshop\model\User.class
@@ -13,9 +12,9 @@ com\peachshop\service\UserCouponService.class
 com\peachshop\controller\GoodsReputationController.class
 com\peachshop\service\CouponService.class
 com\peachshop\controller\UserController.class
+com\peachshop\repository\AddressRepository.class
 com\peachshop\controller\ProductController.class
 com\peachshop\controller\ShoppingCartController.class
-com\peachshop\service\HybridRecommendationService$UserBehavior.class
 com\peachshop\model\UserBehavior.class
 com\peachshop\service\ProductService.class
 com\peachshop\repository\CouponRepository.class
@@ -24,7 +23,9 @@ com\peachshop\controller\DiscountController.class
 com\peachshop\repository\UserCouponRepository.class
 com\peachshop\service\RecommendationService.class
 com\peachshop\repository\ShoppingCartRepository.class
+com\peachshop\service\AddressService.class
 com\peachshop\controller\BannerController.class
+com\peachshop\controller\AddressController.class
 com\peachshop\service\HybridRecommendationService.class
 com\peachshop\repository\ProductRepository.class
 com\peachshop\config\SecurityConfig.class
@@ -33,5 +34,6 @@ com\peachshop\controller\TestController.class
 com\peachshop\controller\HelloController.class
 com\peachshop\controller\UserBehaviorController.class
 com\peachshop\BackendApplication.class
+com\peachshop\model\Address.class
 com\peachshop\service\ShoppingCartService.class
 com\peachshop\service\UserBehaviorService.class

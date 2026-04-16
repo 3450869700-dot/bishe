@@ -9,7 +9,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long userId;
+    private Long id;
     
     private String username;
     private String password;
@@ -23,11 +23,11 @@ public class User {
     @Column(name = "is_valid")
     private Integer isValid = 1;
     
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "create_time")
+    private LocalDateTime createTime;
     
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "update_time")
+    private LocalDateTime updateTime;
     
     @Column(name = "score")
     private Integer score = 0;
@@ -40,19 +40,19 @@ public class User {
     
     // Getters and Setters
     public Long getId() {
-        return userId;
+        return id;
     }
     
     public void setId(Long id) {
-        this.userId = id;
+        this.id = id;
     }
     
     public Long getUserId() {
-        return userId;
+        return id;
     }
     
     public void setUserId(Long userId) {
-        this.userId = userId;
+        this.id = userId;
     }
     
     public String getUsername() {
@@ -119,20 +119,20 @@ public class User {
         this.city = city;
     }
     
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getCreateTime() {
+        return createTime;
     }
     
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public void setCreateTime(LocalDateTime createTime) {
+        this.createTime = createTime;
     }
     
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+    public LocalDateTime getUpdateTime() {
+        return updateTime;
     }
     
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setUpdateTime(LocalDateTime updateTime) {
+        this.updateTime = updateTime;
     }
     
     public Integer getScore() {

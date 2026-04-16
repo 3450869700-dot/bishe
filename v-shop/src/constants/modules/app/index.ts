@@ -112,6 +112,12 @@ export const tabBar = {
       activeIcon: 'shopping-cart',
     },
     {
+      text: '订单',
+      pagePath: '/order/list',
+      icon: 'orders-o',
+      activeIcon: 'orders',
+    },
+    {
       text: '个人中心',
       pagePath: '/mine',
       icon: 'contact',

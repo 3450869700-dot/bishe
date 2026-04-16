@@ -82,6 +82,19 @@ export default {
           areaStr: this.formatAreaStr(info.provinceStr, info.cityStr, info.areaStr),
         };
       });
+    } else {
+      // 填充默认的虚拟地址
+      this.form = {
+        id: '',
+        name: '张三',
+        mobile: '13800138000',
+        address: '某某街道某某小区1号楼1单元101室',
+        isDefault: true,
+        provinceCode: '110000',
+        cityCode: '110100',
+        countyCode: '110101',
+        areaStr: '北京市 / 北京市 / 东城区',
+      };
     }
   },
   methods: {
@@ -128,6 +141,7 @@ export default {
         provinceId: this.form.provinceCode,
         cityId: this.form.cityCode,
         districtId: this.form.countyCode,
+        areaStr: this.form.areaStr,
       };
 
       showLoadingToast({
